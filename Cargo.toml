@@ -3,3 +3,7 @@ name = "bandcamp_downloader"
 version = "0.1.0"
 authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
 edition = "2018"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.55"
