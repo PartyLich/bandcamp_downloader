@@ -1,0 +1,5 @@
+[package]
+name = "bandcamp_downloader"
+version = "0.1.0"
+authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
+edition = "2018"
