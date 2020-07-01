@@ -1,6 +1,8 @@
+pub use album::Album;
 pub use json::*;
 pub use track::Track;
 
+mod album;
 mod json;
 mod track;
 
