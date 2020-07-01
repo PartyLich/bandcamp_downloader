@@ -1,6 +1,8 @@
+pub use json::*;
+pub use track::Track;
 
 mod json;
-pub use json::*;
+mod track;
 
 enum FileType {
     Artwork,
