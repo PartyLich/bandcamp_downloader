@@ -1,6 +1,8 @@
 use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Deserializer};
 
+use crate::model::{Album, Track};
+
 /// Convert bandcamp datetime string format to a chrono DateTime object
 fn datetime_from_str<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
 where
@@ -37,6 +39,30 @@ pub struct JsonTrack {
 
     #[serde(rename = "title")]
     pub title: String,
+}
+
+impl JsonTrack {
+    pub fn into_track(self, album: &Album) -> Track {
+        // "//example.com" Uri lacks protocol
+        let mp3_url = self.file.url.map(|url| {
+            if url.starts_with("//") {
+                format!("http:{}", url)
+            } else {
+                url
+            }
+        });
+        // For bandcamp track pages, Number will be 0. Set 1 instead
+        let number = self.number.or(Some(1));
+
+        Track::new(
+            album,
+            self.duration,
+            self.lyrics,
+            mp3_url,
+            number.unwrap(),
+            self.title,
+        )
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
