@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+
+use futures::future::join_all;
 use regex::Regex;
 
 use error::Error;
@@ -97,6 +100,22 @@ async fn get_disco_urls(client: &reqwest::Client, url: &str) -> Result<Vec<Strin
     Ok(albums_urls)
 }
 
+/// Returns all discography lists from a set of URLs (artist, album, track).
+async fn get_artist_discography(urls: &HashSet<&str>) -> Vec<String> {
+    // TODO: proxy support
+    let client = reqwest::Client::new();
+
+    let tasks: Vec<_> = urls
+        .iter()
+        .map(|url| get_disco_urls(&client, url))
+        .collect();
+
+    let results = join_all(tasks).await;
+    let albums_urls: HashSet<_> = results.into_iter().flatten().flatten().collect();
+
+    albums_urls.into_iter().collect()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -120,5 +139,27 @@ mod test {
             .unwrap();
 
         assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[tokio::test]
+    async fn gets_discography() {
+        let urls: HashSet<_> = vec![
+            "https://moter.bandcamp.com/album/wave-transmission",
+            "https://theracers.bandcamp.com/",
+        ]
+        .into_iter()
+        .collect();
+
+        let mut expected: Vec<_> = vec![
+            "http://moter.bandcamp.com/album/moter-ep",
+            "http://moter.bandcamp.com/album/last-train-to-synthville",
+            "http://theracers.bandcamp.com/track/final-lap",
+            "http://moter.bandcamp.com/album/wave-transmission",
+            "http://moter.bandcamp.com/album/omegadriver",
+        ];
+        let mut actual = get_artist_discography(&urls).await;
+        actual.sort();
+        expected.sort();
+        assert_eq!(actual, expected,);
     }
 }
