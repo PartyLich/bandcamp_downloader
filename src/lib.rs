@@ -4,6 +4,7 @@ use futures::future::join_all;
 use regex::Regex;
 
 use error::Error;
+use model::Album;
 
 #[macro_use]
 extern crate lazy_static;
@@ -114,6 +115,50 @@ async fn get_artist_discography(urls: &HashSet<&str>) -> Vec<String> {
     let albums_urls: HashSet<_> = results.into_iter().flatten().flatten().collect();
 
     albums_urls.into_iter().collect()
+}
+
+/// Returns the albums located at the specified URLs.
+async fn get_albums(urls: HashSet<&str>) -> Result<Vec<Album>> {
+    let client = reqwest::Client::new();
+
+    let tasks = urls.iter().map(|url| {
+        let client = &client;
+        async move {
+            println!("Retrieving album data for {}", url);
+
+            // Retrieve URL HTML source code
+            // TODO proxy support
+            // TODO cancellation
+
+            let raw_html = match client_get_url_text(&client, url).await {
+                Ok(res) => res,
+                Err(_) => {
+                    println!("Could not retrieve data for {}", url);
+                    return None;
+                }
+            };
+
+            // Get info on album
+            let album = match helper::get_album(&raw_html) {
+                Ok(a) => a,
+                Err(_) => {
+                    println!("Could not retrieve album info for {}", url);
+                    return None;
+                }
+            };
+
+            if album.tracks.is_empty() {
+                println!("No tracks found for {}, album will not be downloaded", url);
+                return None;
+            }
+
+            Some(album)
+        }
+    });
+
+    let albums = join_all(tasks).await.into_iter().flatten().collect();
+
+    Ok(albums)
 }
 
 #[cfg(test)]
