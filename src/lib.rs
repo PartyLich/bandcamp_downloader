@@ -1,3 +1,5 @@
+use regex::Regex;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -7,6 +9,13 @@ mod model;
 
 /// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
 pub type Result<T> = std::result::Result<T, error::Error>;
+
+lazy_static! {
+    /// Band url parsing
+    static ref BAND_RE: Regex = Regex::new("band_url = \"(?P<url>.*)\"").unwrap();
+    /// album and track url parsing
+    static ref ALBUM_RE: Regex = Regex::new("href=\"(?P<album_url>/(album|track)/.*?)\"").unwrap();
+}
 
 /// Get text from a url using the reqwest shortcut method
 async fn get_url_text(url: &str) -> Result<String> {

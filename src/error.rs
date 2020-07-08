@@ -6,6 +6,7 @@ use serde_json::error::Category;
 pub enum Error {
     APIError,
     NoAlbumData,
+    NoAlbumFound,
     Serialization(String),
 }
 
@@ -14,6 +15,7 @@ impl fmt::Display for Error {
         match *self {
             Self::APIError => write!(f, "API error occured"),
             Self::NoAlbumData => write!(f, "No album data found for this artist"),
+            Self::NoAlbumFound => write!(f, "No album found for this artist"),
             Self::Serialization(_) => write!(f, "A serialization error occured"),
         }
     }

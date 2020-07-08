@@ -1,9 +1,11 @@
+use std::collections::HashSet;
+
 use regex::Regex;
 
 use crate::{
     error::Error,
     model::{Album, JsonAlbum},
-    Result,
+    Result, ALBUM_RE, BAND_RE,
 };
 
 /// Get the TralbumData content from the page
@@ -63,6 +65,34 @@ pub fn get_album(raw_html: &str) -> Result<Album> {
     // Extract lyrics from album page
 
     Ok(album)
+}
+
+/// Retrieves all the album URLs existing in the provided raw HTML source code of a Bandcamp page.
+pub fn get_albums_url(raw_html: &str) -> Result<Vec<String>> {
+    // Get artist bandcamp page
+    let artist_url = BAND_RE
+        .captures(raw_html)
+        .ok_or(Error::NoAlbumFound)?
+        .name("url")
+        .unwrap()
+        .as_str();
+
+    // Get albums ("real" albums or track-only pages) relative urls
+    let captures = ALBUM_RE.captures_iter(&raw_html);
+
+    let mut album_urls = HashSet::new();
+    for cap in captures {
+        album_urls.insert(format!(
+            "{}{}",
+            artist_url,
+            cap.name("album_url").unwrap().as_str()
+        ));
+    }
+
+    if album_urls.is_empty() {
+        return Err(Error::NoAlbumFound);
+    }
+    Ok(album_urls.into_iter().collect())
 }
 
 #[cfg(test)]
@@ -163,5 +193,61 @@ var PaymentData = {
 };
         let actual = get_album(&raw_html).unwrap();
         assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn gets_albums_url() {
+        let raw_html = r#"
+        var band_url = "http://projectmooncircle.bandcamp.com";
+
+        <ol class="editable-grid music-grid columns-4   public" data-edit-callback="/music_reorder">
+            <li data-item-id="album-3655789805" data-band-id="4055192856" class="music-grid-item square first-four " data-bind="css: {'featured': featured()}">
+    <a href="/album/silent-opera">
+        <div class="art">
+                <img src="https://f4.bcbits.com/img/a2796464951_2.jpg" alt="">
+        </div>
+        <p class="title">
+            Silent Opera
+                <br><span class="artist-override">
+                Long Arm
+                </span>
+        </p>
+    </a>
+</li>
+            <li data-item-id="album-1556143258" data-band-id="4055192856" class="music-grid-item square
+    " data-bind="css: {'featured': featured()}">
+    <a href="/album/audio-alchemy">
+        <div class="art">
+                <img class="lazy" src="/img/0.gif" data-original="https://f4.bcbits.com/img/a2189627774_2.jpg" alt="">
+        </div>
+        <p class="title">
+            Audio Alchemy
+        </p>
+    </a>
+</li>
+            <li data-item-id="album-1965508264" data-band-id="4055192856" class="music-grid-item square
+    " data-bind="css: {'featured': featured()}">
+    <a href="/album/the-lucid-effect">
+        <div class="art">
+                <img class="lazy" src="/img/0.gif" data-original="https://f4.bcbits.com/img/a3631959610_2.jpg" alt="">
+        </div>
+        <p class="title">
+            The Lucid Effect
+                <br><span class="artist-override">
+                40 Winks
+                </span>
+        </p>
+    </a>
+</li>
+</ol>
+        "#;
+        let expected = vec![
+            "http://projectmooncircle.bandcamp.com/album/audio-alchemy",
+            "http://projectmooncircle.bandcamp.com/album/silent-opera",
+            "http://projectmooncircle.bandcamp.com/album/the-lucid-effect",
+        ];
+        let mut actual = get_albums_url(raw_html).unwrap();
+        actual.sort();
+        assert_eq!(actual, expected);
     }
 }
