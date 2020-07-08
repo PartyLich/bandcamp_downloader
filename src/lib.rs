@@ -1,5 +1,7 @@
 use regex::Regex;
 
+use error::Error;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -31,6 +33,28 @@ async fn client_get_url_text(client: &reqwest::Client, url: &str) -> Result<Stri
         .text()
         .await
         .map_err(From::from)
+}
+
+/// Get artist "music" bandcamp page (http://artist.bandcamp.com/music)
+async fn get_music_page_url(client: &reqwest::Client, url: &str) -> Result<String> {
+    // Retrieve URL HTML source code
+    let raw_html = match client_get_url_text(client, url).await {
+        Ok(res) => res,
+        Err(e) => {
+            println!("Could not retrieve data for {}", url);
+            return Err(e);
+        }
+    };
+
+    // Get artist "music" bandcamp page (http://artist.bandcamp.com/music)
+    let captures = BAND_RE.captures(&raw_html);
+    if captures.is_none() {
+        println!("No discography could be found on {}. Try to uncheck the \"Download artist discography\" option", url);
+        return Err(Error::NoDiscography);
+    }
+
+    let music_page_url = captures.unwrap().name("url").unwrap().as_str();
+    Ok(format!("{}{}", music_page_url, "/music"))
 }
 
 #[cfg(test)]

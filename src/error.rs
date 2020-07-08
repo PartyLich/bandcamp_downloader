@@ -7,6 +7,7 @@ pub enum Error {
     APIError,
     NoAlbumData,
     NoAlbumFound,
+    NoDiscography,
     Serialization(String),
 }
 
@@ -16,6 +17,7 @@ impl fmt::Display for Error {
             Self::APIError => write!(f, "API error occured"),
             Self::NoAlbumData => write!(f, "No album data found for this artist"),
             Self::NoAlbumFound => write!(f, "No album found for this artist"),
+            Self::NoDiscography => write!(f, "No discography could be found on the supplied url"),
             Self::Serialization(_) => write!(f, "A serialization error occured"),
         }
     }
