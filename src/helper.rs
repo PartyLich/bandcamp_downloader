@@ -1,9 +1,6 @@
 use regex::Regex;
 
-use crate::{
-    error::Error,
-    Result,
-};
+use crate::{error::Error, Result};
 
 /// Get the TralbumData content from the page
 fn get_album_data(raw_html: &str) -> Result<String> {
@@ -31,9 +28,34 @@ fn get_album_data(raw_html: &str) -> Result<String> {
     Ok(album_data.to_string())
 }
 
+// We're pulling from a javascript object literal, so we need to turn it into valid JSON before we
+// can deserialize it.
+// In trackinfo property, we have for instance:
+//     url: "http://verbalclick.bandcamp.com" + "/album/404"
+// -> Remove the " + "
+fn fix_json(album_data: &str) -> String {
+    lazy_static! {
+        static ref JSON_FIX_RE: regex::Regex =
+            regex::Regex::new(r#"(?P<root>url: ".+)" \+ "(?P<album>.+",)"#).unwrap();
+    }
+    let fixed = JSON_FIX_RE.replace(album_data, "${root}${album}");
+
+    fixed.to_string()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn fixes_json() {
+        let raw = r#"url: "http://verbalclick.bandcamp.com" + "/album/404","#;
+
+        let msg = "fixes bad json";
+        let expected = r#"url: "http://verbalclick.bandcamp.com/album/404","#;
+        let actual = fix_json(raw);
+        assert_eq!(actual, expected, "{}", msg);
+    }
 
     #[test]
     fn gets_album_data() {
