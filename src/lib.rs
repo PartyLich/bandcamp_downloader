@@ -57,6 +57,46 @@ async fn get_music_page_url(client: &reqwest::Client, url: &str) -> Result<Strin
     Ok(format!("{}{}", music_page_url, "/music"))
 }
 
+/// Returns the artist's discography from any URL (artist, album, track).
+async fn get_disco_urls(client: &reqwest::Client, url: &str) -> Result<Vec<String>> {
+    println!("Retrieving artist discography from {}", url);
+
+    // Get artist "music" bandcamp page (http://artist.bandcamp.com/music)
+    let music_page_url = match get_music_page_url(client, url).await {
+        Ok(res) => res,
+        Err(e) => {
+            println!("Could not retrieve data for {}", url);
+            return Err(e);
+        }
+    };
+
+    // Retrieve artist "music" page HTML source code
+    let raw_html = match client_get_url_text(client, &music_page_url).await {
+        Ok(res) => res,
+        Err(e) => {
+            println!("Could not retrieve data for {}", music_page_url);
+            return Err(e);
+        }
+    };
+
+    let mut albums_urls = Vec::new();
+    match helper::get_albums_url(&raw_html) {
+        Err(_) => {
+            println!("No referred album could be found on {}. Try to uncheck the \"Download artist discography\" option" ,music_page_url);
+        }
+        Ok(found_albums) => {
+            albums_urls.extend(found_albums);
+        }
+    }
+
+    if albums_urls.is_empty() {
+        // This seem to be a one-album artist with no "music" page => URL redirects to the unique album URL
+        albums_urls.push(url.to_string());
+    }
+
+    Ok(albums_urls)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
