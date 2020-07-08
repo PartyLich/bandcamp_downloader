@@ -1,4 +1,8 @@
+#[macro_use]
+extern crate lazy_static;
+
 mod error;
+mod helper;
 mod model;
 
 /// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
