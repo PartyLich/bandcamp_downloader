@@ -15,6 +15,7 @@ extern crate lazy_static;
 mod error;
 mod helper;
 mod model;
+pub mod settings;
 pub mod ui;
 
 /// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
