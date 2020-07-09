@@ -161,6 +161,36 @@ async fn get_albums(urls: HashSet<&str>) -> Result<Vec<Album>> {
     Ok(albums)
 }
 
+/// Fetch albums data from the URLs specified when creating this DownloadManager.
+pub async fn fetch_urls(urls: &str, discography: bool) -> Vec<Album> {
+    let urls: HashSet<_> = urls
+        .lines()
+        .map(|s| {
+            if !s.starts_with("http") {
+                // prepend missing protocol
+                format!("http://{}", s)
+            } else {
+                s.to_string()
+            }
+        })
+        .collect();
+    let urls: HashSet<_> = urls.iter().map(|s| s.as_str()).collect();
+
+    // Get info on albums
+    // Get URLs of albums to download
+    let albums = if discography {
+        println!("collecting discography urls");
+        let url_list = get_artist_discography(&urls).await;
+        let urls = url_list.iter().map(|s| s.as_str()).collect();
+
+        get_albums(urls).await.expect("FIXME")
+    } else {
+        get_albums(urls).await.expect("FIXME")
+    };
+
+    albums
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
