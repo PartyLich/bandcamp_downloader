@@ -1,10 +1,13 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, path::Path};
 
+use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
+use tokio::{fs, io::AsyncWriteExt};
 
 use error::Error;
-use model::Album;
+use model::{Album, Track};
+use ui::{LogLevel, Message, Progress};
 
 #[macro_use]
 extern crate lazy_static;
@@ -12,6 +15,7 @@ extern crate lazy_static;
 mod error;
 mod helper;
 mod model;
+pub mod ui;
 
 /// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
 pub type Result<T> = std::result::Result<T, error::Error>;
@@ -189,6 +193,126 @@ pub async fn fetch_urls(urls: &str, discography: bool) -> Vec<Album> {
     };
 
     albums
+}
+
+async fn download_track_stream(
+    track: Track,
+    allowed_file_size_difference: f32,
+    mut sender: mpsc::Sender<Message>,
+) -> Result<()> {
+    const MAX_TRIES: u32 = 4;
+
+    println!(
+        r#"Downloading track "{}" from url: {:?}"#,
+        track.title, track.mp3_url
+    );
+    sender
+        .try_send(Message::Log(
+            format!(r#"Downloading track "{}""#, track.title,),
+            LogLevel::Info,
+        ))
+        .expect("Failed to send message");
+
+    if Path::new(&track.path).exists() {
+        let file_length = fs::metadata(&track.path)
+            .await
+            .unwrap_or_else(|_| panic!("Unable to stat file {}", track.path))
+            .len();
+
+        println!("file already exists {}. Size: {}", &track.path, file_length);
+        sender
+            .try_send(Message::Log(
+                format!("file already exists {}. Size: {}", &track.path, file_length),
+                LogLevel::Info,
+            ))
+            .expect("Failed to send message");
+        return Err(Error::Io(String::from("File already exists")));
+    }
+
+    let mut tries = 0u32;
+    while tries < MAX_TRIES {
+        // TODO cancellation
+        // Start download
+        let response = reqwest::get(track.mp3_url.as_ref().unwrap()).await;
+        if let Err(e) = response {
+            if e.is_status() {
+                eprintln!("http error status {}", e.status().unwrap());
+                tries += 1;
+                continue;
+            } else if e.is_timeout() {
+                tries += 1;
+                continue;
+            } else {
+                eprintln!("download error {}", e);
+                return Err(Error::Download);
+            }
+        }
+        let mut response = response.unwrap();
+
+        let dir = Path::new(&track.path).parent();
+        if let Some(parent_dir) = dir {
+            println!("creating dir {}", parent_dir.to_string_lossy());
+            sender
+                .try_send(Message::Log(
+                    format!("creating dir {}", parent_dir.to_string_lossy()),
+                    LogLevel::Info,
+                ))
+                .expect("Failed to send message");
+            fs::create_dir_all(parent_dir).await?;
+        }
+
+        println!("creating file {}", &track.path);
+        let mut destination = fs::File::create(&track.path).await?;
+        println!("file created");
+
+        let mut downloaded = 0;
+        let total_size = response.content_length().unwrap_or(0);
+        while let Some(chunk) = response.chunk().await? {
+            destination.write_all(&chunk).await?;
+
+            downloaded += chunk.len() as u64;
+            sender
+                .try_send(Message::Progress(Progress {
+                    path: track.path.to_string(),
+                    complete: downloaded,
+                    total: total_size,
+                }))
+                .expect("Failed to send message");
+
+            let percent = (downloaded as f32 / total_size as f32) * 100.0;
+            println!(
+                "{}",
+                format!(
+                    "{} downloaded: {} of {} ({:.2}%)",
+                    &track.title, downloaded, total_size, percent
+                ),
+            );
+        }
+
+        println!(
+            "Downloaded track \"{}\" ",
+            Path::new(&track.path)
+                .file_name()
+                .unwrap()
+                .to_string_lossy(),
+        );
+        sender
+            .try_send(Message::Log(
+                format!(
+                    "Downloaded track \"{}\" ",
+                    Path::new(&track.path)
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy(),
+                ),
+                LogLevel::Info,
+            ))
+            .expect("Failed to send message");
+
+        return Ok(());
+    }
+
+    Err(Error::Download)
 }
 
 #[cfg(test)]

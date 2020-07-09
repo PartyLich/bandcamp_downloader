@@ -5,6 +5,8 @@ use serde_json::error::Category;
 #[derive(Debug, Clone)]
 pub enum Error {
     APIError,
+    Download,
+    Io(String),
     NoAlbumData,
     NoAlbumFound,
     NoDiscography,
@@ -15,6 +17,8 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Self::APIError => write!(f, "API error occured"),
+            Self::Download => write!(f, "Download error"),
+            Self::Io(_) => write!(f, "IO error"),
             Self::NoAlbumData => write!(f, "No album data found for this artist"),
             Self::NoAlbumFound => write!(f, "No album found for this artist"),
             Self::NoDiscography => write!(f, "No discography could be found on the supplied url"),
@@ -40,5 +44,19 @@ impl From<serde_json::Error> for Error {
         };
 
         Error::Serialization(format!("{}:\n\t{:?}", msg, error))
+    }
+}
+
+impl From<tokio::io::Error> for Error {
+    fn from(error: tokio::io::Error) -> Error {
+        let msg = match error.kind() {
+            tokio::io::ErrorKind::NotFound => "IO error: an entity was not found",
+            tokio::io::ErrorKind::PermissionDenied => {
+                "IO error: operation lacked the necessary privileges to complete."
+            }
+            _ => "An IO error occured",
+        };
+
+        Error::Io(format!("{}:\n\t{:?}", msg, error))
     }
 }
