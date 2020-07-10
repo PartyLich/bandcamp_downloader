@@ -316,6 +316,35 @@ async fn download_track_stream(
     Err(Error::Download)
 }
 
+/// Downloads an album, delivering status updates to a channel via the `sender`
+async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
+    const ALLOWED_FILE_SIZE_DIFFERENCE: f32 = 0.05;
+    // TODO cancellation
+
+    // Create directory to place track files
+    if let Err(e) = fs::create_dir_all(&album.path).await {
+        eprintln!("{}", e);
+        println!("An error occured when creating the album folder. Make sure you have the rights to write files in the folder you chose");
+        return;
+    }
+
+    // TODO Download artwork
+
+    // Download tracks
+    let mut download_tasks = Vec::with_capacity(album.tracks.len());
+    for track in &album.tracks {
+        download_tasks.push(tokio::spawn(download_track_stream(
+            track.clone(),
+            ALLOWED_FILE_SIZE_DIFFERENCE,
+            sender.clone(),
+        )));
+    }
+    let tracks_downloaded = join_all(download_tasks).await;
+
+    // TODO Tag tracks
+    // TODO Create playlist file
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
