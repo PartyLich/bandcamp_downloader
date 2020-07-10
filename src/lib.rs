@@ -12,6 +12,7 @@ use ui::{LogLevel, Message, Progress};
 #[macro_use]
 extern crate lazy_static;
 
+pub mod core;
 mod error;
 mod helper;
 mod model;
