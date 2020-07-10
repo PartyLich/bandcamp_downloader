@@ -1,5 +1,13 @@
 use std::hash::{Hash, Hasher};
 
+use crate::settings::UserSettings;
+
+/// Behavior required by a user interface driving the core logic.
+pub trait Ui {
+    /// Start the user interface with the supplied `UserSettings`
+    fn run(&self, user_settings: UserSettings);
+}
+
 #[derive(Debug, Clone)]
 pub enum LogLevel {
     Warn,
