@@ -2,6 +2,10 @@ use std::hash::{Hash, Hasher};
 
 use crate::settings::UserSettings;
 
+pub use intl::IntlString;
+
+mod intl;
+
 /// Behavior required by a user interface driving the core logic.
 pub trait Ui {
     /// Start the user interface with the supplied `UserSettings`
