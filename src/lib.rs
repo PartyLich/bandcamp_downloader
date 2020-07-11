@@ -167,19 +167,20 @@ async fn get_albums(urls: HashSet<&str>) -> Result<Vec<Album>> {
     Ok(albums)
 }
 
+/// Barebones http protocol add.
+// TODO use regex, more thorough checks
+fn prepend_http(url: &str) -> String {
+    if !url.starts_with("http") {
+        // prepend missing protocol
+        format!("http://{}", url)
+    } else {
+        url.to_string()
+    }
+}
+
 /// Fetch albums data from the URLs specified when creating this DownloadManager.
 pub async fn fetch_urls(urls: &str, discography: bool) -> Vec<Album> {
-    let urls: HashSet<_> = urls
-        .lines()
-        .map(|s| {
-            if !s.starts_with("http") {
-                // prepend missing protocol
-                format!("http://{}", s)
-            } else {
-                s.to_string()
-            }
-        })
-        .collect();
+    let urls: HashSet<_> = urls.lines().map(prepend_http).collect();
     let urls: HashSet<_> = urls.iter().map(|s| s.as_str()).collect();
 
     // Get info on albums
