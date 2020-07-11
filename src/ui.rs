@@ -2,8 +2,10 @@ use std::hash::{Hash, Hasher};
 
 use crate::settings::UserSettings;
 
+pub use self::iced::IcedUi;
 pub use intl::IntlString;
 
+mod iced;
 mod intl;
 
 /// Behavior required by a user interface driving the core logic.

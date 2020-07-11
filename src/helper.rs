@@ -1,12 +1,32 @@
 use std::collections::HashSet;
 
+use futures::channel::mpsc;
 use regex::Regex;
 
 use crate::{
     error::Error,
     model::{Album, JsonAlbum},
+    ui::{LogLevel, Message},
     Result, ALBUM_RE, BAND_RE,
 };
+
+fn log_channel<T: ToString>(mut sender: mpsc::Sender<Message>, level: LogLevel, msg: T) {
+    sender
+        .try_send(Message::Log(msg.to_string(), level))
+        .expect("Failed to send message");
+}
+
+pub fn log_info<T: ToString>(sender: mpsc::Sender<Message>, msg: T) {
+    log_channel(sender, LogLevel::Info, msg)
+}
+
+pub fn log_warn<T: ToString>(sender: mpsc::Sender<Message>, msg: T) {
+    log_channel(sender, LogLevel::Warn, msg)
+}
+
+pub fn log_error<T: ToString>(sender: mpsc::Sender<Message>, msg: T) {
+    log_channel(sender, LogLevel::Error, msg)
+}
 
 /// Get the TralbumData content from the page
 fn get_album_data(raw_html: &str) -> Result<String> {
