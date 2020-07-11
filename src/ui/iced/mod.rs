@@ -4,6 +4,7 @@ use components::EntryMessage;
 
 mod components;
 mod style;
+mod subscription;
 
 /// UI event messages
 #[derive(Debug, Clone)]
