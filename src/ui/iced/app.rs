@@ -38,13 +38,15 @@ impl App {
     pub fn new(flags: AppFlags) -> Self {
         let AppFlags { user_settings } = flags;
         let (sender, receiver) = mpsc::channel(50);
+        let mut ui_state = main_view::State::default();
+        ui_state.download_discography = user_settings.download_artist_discography;
         let user_settings = Arc::new(RwLock::new(user_settings));
         let download_service = DownloadService::new(Arc::clone(&user_settings));
 
         Self {
             user_settings,
             download_service: Arc::new(download_service),
-            ui_state: main_view::State::default(),
+            ui_state,
             sender,
             receiver: Arc::new(Mutex::new(receiver)),
         }
