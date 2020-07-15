@@ -1,29 +1,36 @@
 //! DownloadService public contract
-use futures::channel::mpsc;
-use futures::future::join_all;
 use std::sync::Arc;
 
+use futures::channel::mpsc;
+use futures::future::join_all;
+use tokio::sync::RwLock;
+
 use crate::{settings::UserSettings, ui::Message};
+
+type Settings = Arc<RwLock<UserSettings>>;
 
 /// DownloadService public contract
 #[derive(Debug)]
 pub struct DownloadService {
     /// User configurable application settings (paths, behavior, etc)
-    pub settings: UserSettings,
+    pub settings: Settings,
 }
 
 impl DownloadService {
     /// Create a new instance of this struct
-    pub fn new(settings: UserSettings) -> Self {
+    pub fn new(settings: Settings) -> Self {
         Self { settings }
     }
 
     /// Start downloads
     pub async fn start_downloads(self: Arc<Self>, urls: String, sender: mpsc::Sender<Message>) {
-        let albums = crate::fetch_urls(&urls, self.settings.download_artist_discography).await;
+        let settings = self.settings.read().await;
+
+        let albums = crate::fetch_urls(&urls, settings.download_artist_discography).await;
+
         // TODO cancellation
 
-        if self.settings.download_one_album_at_a_time {
+        if settings.download_one_album_at_a_time {
             // Download one album at a time
             for album in albums {
                 crate::download_album(album, sender.clone()).await;

@@ -2,11 +2,11 @@ use futures::channel::mpsc;
 use std::sync::Arc;
 
 use iced::{Application, Command, Element, Settings, Subscription};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 
 use super::{
     components::{main_view, Entry, EntryMessage},
-    subscription, Message,
+    subscription, Message, SettingType,
 };
 use crate::{
     core::DownloadService,
@@ -18,7 +18,6 @@ use crate::{
 /// Application flags
 #[derive(Debug)]
 pub struct AppFlags {
-    pub download_service: DownloadService,
     pub user_settings: UserSettings,
 }
 
@@ -26,7 +25,7 @@ type SharedReceiver<T> = Arc<Mutex<mpsc::Receiver<T>>>;
 
 #[derive(Debug)]
 pub struct App {
-    user_settings: UserSettings,
+    user_settings: Arc<RwLock<UserSettings>>,
     download_service: Arc<DownloadService>,
     ui_state: main_view::State,
 
@@ -37,11 +36,10 @@ pub struct App {
 impl App {
     /// Create a new instance
     pub fn new(flags: AppFlags) -> Self {
-        let AppFlags {
-            download_service,
-            user_settings,
-        } = flags;
+        let AppFlags { user_settings } = flags;
         let (sender, receiver) = mpsc::channel(50);
+        let user_settings = Arc::new(RwLock::new(user_settings));
+        let download_service = DownloadService::new(Arc::clone(&user_settings));
 
         Self {
             user_settings,
@@ -112,7 +110,15 @@ impl Application for App {
             }
             Message::DiscographyToggled(value) => {
                 self.ui_state.download_discography = value;
-                self.user_settings.download_artist_discography = value;
+
+                let settings = self.user_settings.clone();
+                return Command::perform(
+                    async move {
+                        let mut settings = settings.write().await;
+                        settings.download_artist_discography = value;
+                    },
+                    |_| Message::SettingsChanged(SettingType::Other),
+                );
             }
             Message::AddUrl => {
                 if !self.ui_state.url_state.input_value.is_empty() {
@@ -159,7 +165,8 @@ impl Application for App {
             Message::DownloadsComplete(_) => {
                 log_info(self.sender.clone(), "All downloads complete");
             }
-            _ => (),
+            Message::SetSaveDir => {}
+            Message::SettingsChanged(..) => {}
         }
         Command::none()
     }

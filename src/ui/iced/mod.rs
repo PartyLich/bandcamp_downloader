@@ -1,4 +1,6 @@
 //! UI implementation using iced crate
+use std::sync::Arc;
+
 use iced::Application;
 
 use crate::{core::DownloadService, settings::UserSettings, ui};
@@ -16,13 +18,17 @@ pub struct IcedUi {}
 
 impl ui::Ui for IcedUi {
     fn run(&self, user_settings: UserSettings) {
-        let download_service = DownloadService::new(user_settings.clone());
 
         App::run(App::default_settings(AppFlags {
-            download_service,
             user_settings,
         }));
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum SettingType {
+    Language,
+    Other,
 }
 
 /// UI event messages
@@ -38,4 +44,5 @@ pub enum Message {
     SetSaveDir,
     DownloadsComplete(()),
     UrlMessage(usize, EntryMessage),
+    SettingsChanged(SettingType),
 }
