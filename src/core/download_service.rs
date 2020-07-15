@@ -26,7 +26,12 @@ impl DownloadService {
     pub async fn start_downloads(self: Arc<Self>, urls: String, sender: mpsc::Sender<Message>) {
         let settings = self.settings.read().await;
 
-        let albums = crate::fetch_urls(&urls, settings.download_artist_discography).await;
+        let albums = crate::fetch_urls(
+            &urls,
+            settings.download_artist_discography,
+            &settings.downloads_path.to_string_lossy(),
+        )
+        .await;
 
         // TODO cancellation
 

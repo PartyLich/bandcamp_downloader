@@ -71,7 +71,7 @@ fn fix_json(album_data: &str) -> String {
 
 /// Retrieves the data on the album of the specified Bandcamp page.  Takes the HTML source code of
 /// a Bandcamp album page and returns the data on the album of the specified Bandcamp page.
-pub fn get_album(raw_html: &str) -> Result<Album> {
+pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
     // Keep the necessary part of the html only
     // it's a js object literal, which isnt JSON, so we need to adjust it to match the actual
     // spec prior to deserialization
@@ -79,7 +79,7 @@ pub fn get_album(raw_html: &str) -> Result<Album> {
     let album_data = get_album_data(&album_data)?;
     // Deserialize JSON
     // TODO serializer interface
-    let album: Album = serde_json::from_str::<JsonAlbum>(&album_data)?.into();
+    let album = serde_json::from_str::<JsonAlbum>(&album_data)?.to_album(folder_path);
 
     // TODO lyrics
     // Extract lyrics from album page
@@ -211,7 +211,8 @@ var PaymentData = {
         title: String::from("Final Lap")
     }],
 };
-        let actual = get_album(&raw_html).unwrap();
+        let save_dir = "/home/partylich/music/test/{artist}/{year} - {album}";
+        let actual = get_album(&raw_html, save_dir).unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 

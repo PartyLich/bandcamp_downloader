@@ -90,6 +90,38 @@ pub struct JsonAlbum {
     pub tracks: Vec<JsonTrack>,
 }
 
+impl JsonAlbum {
+    pub fn to_album(self, folder_path: &str) -> Album {
+        const URL_END: &str = "_0.jpg";
+        // Uses the art_id variable to retrieve the image from Bandcamp hosting site
+        const URL_START: &str = "https://f4.bcbits.com/img/a";
+
+        // Some albums do not have a cover art
+        let artwork_url = self
+            .art_id
+            .map(|id| format!("{}{:010}{}", URL_START, id, URL_END));
+
+        let mut album = Album::new(
+            &self.artist,
+            artwork_url.as_deref(),
+            &self.album_data.title,
+            self.album_data.release_date,
+            folder_path,
+        );
+
+        // Some tracks do not have their URL filled on some albums (pre-release...)
+        // Forget those tracks here
+        album.tracks = self
+            .tracks
+            .into_iter()
+            .filter(|t| t.file.url.is_some())
+            .map(|t| t.into_track(&album))
+            .collect();
+
+        album
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

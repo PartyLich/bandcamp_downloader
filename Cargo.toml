@@ -14,6 +14,7 @@ chrono = { version = "0.4.11", features = ["serde"] }
 iced = {version= "0.1.1", features = ["image", "debug", "tokio"] }
 iced_native = "0.2.2"
 iced_futures = "0.1.2"
+dirs = "3.0.1"
 
 [dependencies.reqwest]
 version = "0.10.6"

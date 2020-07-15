@@ -124,7 +124,7 @@ async fn get_artist_discography(urls: &HashSet<&str>) -> Vec<String> {
 }
 
 /// Returns the albums located at the specified URLs.
-async fn get_albums(urls: HashSet<&str>) -> Result<Vec<Album>> {
+async fn get_albums(urls: HashSet<&str>, save_dir: &str) -> Result<Vec<Album>> {
     let client = reqwest::Client::new();
 
     let tasks = urls.iter().map(|url| {
@@ -145,7 +145,7 @@ async fn get_albums(urls: HashSet<&str>) -> Result<Vec<Album>> {
             };
 
             // Get info on album
-            let album = match helper::get_album(&raw_html) {
+            let album = match helper::get_album(&raw_html, save_dir) {
                 Ok(a) => a,
                 Err(_) => {
                     println!("Could not retrieve album info for {}", url);
@@ -179,7 +179,8 @@ fn prepend_http(url: &str) -> String {
 }
 
 /// Fetch albums data from the URLs specified when creating this DownloadManager.
-pub async fn fetch_urls(urls: &str, discography: bool) -> Vec<Album> {
+pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Album> {
+    let retrieve_file_size = false;
     let urls: HashSet<_> = urls.lines().map(prepend_http).collect();
     let urls: HashSet<_> = urls.iter().map(|s| s.as_str()).collect();
 
@@ -190,9 +191,9 @@ pub async fn fetch_urls(urls: &str, discography: bool) -> Vec<Album> {
         let url_list = get_artist_discography(&urls).await;
         let urls = url_list.iter().map(|s| s.as_str()).collect();
 
-        get_albums(urls).await.expect("FIXME")
+        get_albums(urls, save_dir).await.expect("FIXME")
     } else {
-        get_albums(urls).await.expect("FIXME")
+        get_albums(urls, save_dir).await.expect("FIXME")
     };
 
     albums

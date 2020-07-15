@@ -40,6 +40,7 @@ impl App {
         let (sender, receiver) = mpsc::channel(50);
         let mut ui_state = main_view::State::default();
         ui_state.download_discography = user_settings.download_artist_discography;
+        ui_state.save_dir = user_settings.downloads_path.to_string_lossy().to_string();
         let user_settings = Arc::new(RwLock::new(user_settings));
         let download_service = DownloadService::new(Arc::clone(&user_settings));
 

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 #[derive(Debug, Copy, Clone)]
 pub enum Language {
     EN,
@@ -53,7 +55,7 @@ pub struct UserSettings {
     pub download_artist_discography: bool,
     pub download_one_album_at_a_time: bool,
     pub download_albums_serial: bool,
-    pub downloads_path: String,
+    pub downloads_path: PathBuf,
 
     /// Time in seconds between retries
     pub download_retry_cooldown: f64,
@@ -75,6 +77,14 @@ pub struct UserSettings {
 
 impl Default for UserSettings {
     fn default() -> Self {
+        let mut downloads_path = dirs::audio_dir().unwrap_or_else(|| {
+            let mut home_dir = dirs::home_dir().unwrap();
+            home_dir.push("music");
+            home_dir
+        });
+        downloads_path.push("{artist}");
+        downloads_path.push("{year} - {album}");
+
         Self {
             check_for_updates: true,
 
@@ -90,8 +100,7 @@ impl Default for UserSettings {
             download_artist_discography: false,
             download_one_album_at_a_time: false,
             download_albums_serial: false,
-            downloads_path: String::from(""),
-
+            downloads_path,
             download_retry_cooldown: 0.2,
 
             retrieve_files_size: true,

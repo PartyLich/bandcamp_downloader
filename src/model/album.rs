@@ -42,6 +42,7 @@ impl Album {
         artwork_url: Option<&str>,
         title: &str,
         release_date: DateTime<Utc>,
+        folder_path: &str,
     ) -> Self {
         let mut album = Self {
             artist: artist.to_string(),
@@ -54,8 +55,7 @@ impl Album {
             artwork_path: String::new(),
             artwork_temp_path: String::new(),
         };
-        album.path =
-            album.parse_folder_path("/home/partylich/music/test/{artist}/{year} - {album}");
+        album.path = album.parse_folder_path(folder_path);
         album.playlist_path = album.parse_playlist_path();
         album.set_artwork_paths();
 
@@ -162,36 +162,5 @@ impl Album {
             return;
         }
         // TODO
-    }
-}
-
-impl From<JsonAlbum> for Album {
-    fn from(json: JsonAlbum) -> Self {
-        const URL_END: &str = "_0.jpg";
-        // Uses the art_id variable to retrieve the image from Bandcamp hosting site
-        const URL_START: &str = "https://f4.bcbits.com/img/a";
-
-        // Some albums do not have a cover art
-        let artwork_url = json
-            .art_id
-            .map(|id| format!("{}{:010}{}", URL_START, id, URL_END));
-
-        let mut album = Album::new(
-            &json.artist,
-            artwork_url.as_deref(),
-            &json.album_data.title,
-            json.album_data.release_date,
-        );
-
-        // Some tracks do not have their URL filled on some albums (pre-release...)
-        // Forget those tracks here
-        album.tracks = json
-            .tracks
-            .into_iter()
-            .filter(|t| t.file.url.is_some())
-            .map(|t| t.into_track(&album))
-            .collect();
-
-        album
     }
 }
