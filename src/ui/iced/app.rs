@@ -1,6 +1,7 @@
-use futures::channel::mpsc;
+use std::path::PathBuf;
 use std::sync::Arc;
 
+use futures::channel::mpsc;
 use iced::{Application, Command, Element, Settings, Subscription};
 use tokio::sync::{Mutex, RwLock};
 
@@ -109,7 +110,16 @@ impl Application for App {
                 self.set_url_input(value);
             }
             Message::SaveDirChanged(value) => {
-                self.ui_state.save_dir = value;
+                self.ui_state.save_dir = value.clone();
+
+                let settings = self.user_settings.clone();
+                return Command::perform(
+                    async move {
+                        let mut settings = settings.write().await;
+                        settings.downloads_path = PathBuf::from(value);
+                    },
+                    |_| Message::SettingsChanged(SettingType::Other),
+                );
             }
             Message::DiscographyToggled(value) => {
                 self.ui_state.download_discography = value;
