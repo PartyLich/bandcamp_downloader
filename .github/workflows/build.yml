@@ -23,7 +23,7 @@ jobs:
     - name: Create release dir
       run: |
         mkdir linux_bin
-        cp intl linux_bin/
+        cp -r intl linux_bin/
         cp target/release/bandcamp_downloader linux_bin/
 
     - name: Archive binary
