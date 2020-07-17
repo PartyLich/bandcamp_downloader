@@ -1,8 +1,12 @@
 [package]
 name = "bandcamp_downloader"
 version = "0.1.0"
+license = "AGPL-3.0-only"
+publish = false
 authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
 edition = "2018"
+repository = "https://github.com/PartyLich/bandcamp_downloader"
+description = "Multiplatform app used to download albums from Bandcamp"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
