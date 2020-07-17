@@ -10,7 +10,7 @@ jobs:
     - uses: hecrj/setup-rust-action@v1
     - name: Install cargo-deb
       run: cargo install cargo-deb
-    - uses: actions/checkout@dev
+    - uses: actions/checkout@master
     - name: Enable Link Time Optimizations
       run: |
         echo "[profile.release]" >> Cargo.toml
