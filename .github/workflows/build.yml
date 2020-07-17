@@ -43,17 +43,21 @@ jobs:
     steps:
     - uses: hecrj/setup-rust-action@v1
     - uses: actions/checkout@master
+
     - name: Enable Link Time Optimizations
       run: |
         echo "[profile.release]" >> Cargo.toml
         echo "lto = true" >> Cargo.toml
+
     - name: Enable static CRT linkage
       run: |
         mkdir .cargo
         echo '[target.x86_64-pc-windows-msvc]' >> .cargo/config
         echo 'rustflags = ["-Ctarget-feature=+crt-static"]' >> .cargo/config
+
     - name: Build bandcamp_downloader binary
       run: cargo build --verbose --release
+
     - name: Archive bandcamp_downloader binary
       uses: actions/upload-artifact@v1
       with:
@@ -65,14 +69,17 @@ jobs:
     steps:
     - uses: hecrj/setup-rust-action@v1
     - uses: actions/checkout@master
+
     - name: Enable Link Time Optimizations
       run: |
         echo "[profile.release]" >> Cargo.toml
         echo "lto = true" >> Cargo.toml
+
     - name: Build bandcamp_downloader binary
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.14
       run: cargo build --verbose --release
+
     - name: Archive bandcamp_downloader binary
       uses: actions/upload-artifact@v1
       with:
