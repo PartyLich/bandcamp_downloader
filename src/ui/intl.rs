@@ -3,6 +3,21 @@ use std::{fs, path::PathBuf};
 
 use crate::settings::Language;
 
+#[cfg(debug_assertions)]
+fn get_root_dir() -> PathBuf {
+    env!("CARGO_MANIFEST_DIR").into()
+}
+
+#[cfg(not(debug_assertions))]
+fn get_root_dir() -> PathBuf {
+    if let Ok(mut exe_path) = std::env::current_exe() {
+        exe_path.pop();
+        exe_path
+    } else {
+        PathBuf::new()
+    }
+}
+
 /// Display strings used in the user interface
 #[derive(Debug, Deserialize)]
 pub struct IntlString {
@@ -31,7 +46,8 @@ impl IntlString {
     }
 
     fn load_strings(file_path: &str) -> Self {
-        let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), file_path].iter().collect();
+        let mut path = get_root_dir();
+        path.push(file_path);
         let display = path.display();
 
         // read the contents into a string
