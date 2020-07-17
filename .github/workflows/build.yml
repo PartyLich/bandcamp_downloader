@@ -20,11 +20,17 @@ jobs:
     - name: Build binary
       run: cargo build --verbose --release
 
+    - name: Create release dir
+      run: |
+        mkdir linux_bin
+        cp intl linux_bin/
+        cp target/release/bandcamp_downloader linux_bin/
+
     - name: Archive binary
       uses: actions/upload-artifact@v1
       with:
         name: bandcamp_downloader-x86_64-unknown-linux-gnu
-        path: target/release/bandcamp_downloader
+        path: linux_bin/
 
     - name: Pack bandcamp_downloader .deb package
       run: cargo deb --no-build
