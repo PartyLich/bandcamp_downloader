@@ -64,11 +64,17 @@ jobs:
     - name: Build bandcamp_downloader binary
       run: cargo build --verbose --release
 
-    - name: Archive bandcamp_downloader binary
+    - name: Create release dir
+      run: |
+        mkdir release_bin
+        cp -r intl release_bin/
+        cp target/release/bandcamp_downloader.exe release_bin/
+
+    - name: Archive binary
       uses: actions/upload-artifact@v1
       with:
         name: bandcamp_downloader-x86_64-pc-windows-msvc
-        path: target/release/bandcamp_downloader.exe
+        path: release_bin/
 
   bandcamp_downloader_macos:
     runs-on: macOS-latest
@@ -86,8 +92,14 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: 10.14
       run: cargo build --verbose --release
 
-    - name: Archive bandcamp_downloader binary
+    - name: Create release dir
+      run: |
+        mkdir release_bin
+        cp -r intl release_bin/
+        cp target/release/bandcamp_downloader release_bin/
+
+    - name: Archive binary
       uses: actions/upload-artifact@v1
       with:
         name: bandcamp_downloader-x86_64-apple-darwin
-        path: target/release/bandcamp_downloader
+        path: release_bin/
