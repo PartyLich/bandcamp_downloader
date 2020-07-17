@@ -1,5 +1,6 @@
-use std::{collections::HashSet, path::Path};
+use std::{collections::HashSet, convert::TryFrom, path::Path, sync::Arc};
 
+use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
@@ -321,6 +322,76 @@ async fn download_track_stream(
     Err(Error::Download)
 }
 
+/// Apply id3 tag to a track in the supplied Album
+fn tag_track(
+    album: Arc<Album>,
+    track_index: usize,
+    mut sender: mpsc::Sender<Message>,
+) -> Result<()> {
+    let track = album
+        .tracks
+        .get(track_index)
+        .ok_or(Error::Io(String::from("Bad track index")))?;
+    if !Path::new(&track.path).exists() {
+        return Err(Error::Io(String::from("File does not exist")));
+    }
+
+    // Don't overwrite existing tag
+    if let Ok(_) = id3::Tag::read_from_path(&track.path) {
+        sender
+            .try_send(Message::Log(
+                format!(r#"Track already tagged, skipping "{}""#, track.title,),
+                LogLevel::Info,
+            ))
+            .expect("Failed to send message");
+        return Ok(());
+    }
+
+    let mut tag = id3::Tag::new();
+    println!(r#"Tagging track "{}" "#, track.title,);
+    sender
+        .try_send(Message::Log(
+            format!(r#"Tagging track "{}" "#, track.title,),
+            LogLevel::Info,
+        ))
+        .expect("Failed to send message");
+
+    tag.set_album(&album.title);
+    tag.set_artist(&album.artist);
+    tag.set_title(&track.title);
+    tag.set_track(track.number);
+    tag.set_total_tracks(album.tracks.len() as u32);
+    if let Some(lyrics) = &track.lyrics {
+        tag.add_lyrics(id3::frame::Lyrics {
+            lang: String::default(),
+            description: String::default(),
+            text: lyrics.to_string(),
+        })
+    }
+
+    let year = album.release_date.year();
+    let month = u8::try_from(album.release_date.month()).ok();
+    let day = u8::try_from(album.release_date.day()).ok();
+    tag.set_date_released(id3::Timestamp {
+        year,
+        month,
+        day,
+        hour: None,
+        minute: None,
+        second: None,
+    });
+    tag.set_year(year);
+
+    tag.add_comment(id3::frame::Comment {
+        lang: "eng".to_string(),
+        description: "".to_string(),
+        text: "Support the artists you enjoy.".to_string(),
+    });
+
+    tag.write_to_path(&track.path, id3::Version::Id3v24)
+        .map_err(|e| Error::Io(e.description.to_string()))
+}
+
 /// Downloads an album, delivering status updates to a channel via the `sender`
 async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
     const ALLOWED_FILE_SIZE_DIFFERENCE: f32 = 0.05;
@@ -346,7 +417,16 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
     }
     let tracks_downloaded = join_all(download_tasks).await;
 
-    // TODO Tag tracks
+    // Tag tracks if they do not already have a tag
+    let mut tag_tasks = Vec::with_capacity(album.tracks.len());
+    let album = Arc::new(album);
+    for i in 0..album.tracks.len() {
+        let album = Arc::clone(&album);
+        let sender = sender.clone();
+        tag_tasks.push(tokio::spawn(async move { tag_track(album, i, sender) }));
+    }
+    join_all(tag_tasks).await;
+
     // TODO Create playlist file
 }
 
