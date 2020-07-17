@@ -32,17 +32,18 @@ jobs:
         name: bandcamp_downloader-x86_64-unknown-linux-gnu
         path: linux_bin/
 
-    - name: Pack bandcamp_downloader .deb package
-      run: cargo deb --no-build
+    # TODO deb build that includes resources
+    # - name: Pack bandcamp_downloader .deb package
+    #   run: cargo deb --no-build
 
-    - name: Rename bandcamp_downloader .deb package
-      run: mv target/debian/*.deb target/debian/bandcamp_downloader-x86_64-debian-linux-gnu.deb
+    # - name: Rename bandcamp_downloader .deb package
+    #   run: mv target/debian/*.deb target/debian/bandcamp_downloader-x86_64-debian-linux-gnu.deb
 
-    - name: Archive bandcamp_downloader .deb package
-      uses: actions/upload-artifact@v1
-      with:
-        name: bandcamp_downloader-x86_64-debian-linux-gnu
-        path: target/debian/bandcamp_downloader-x86_64-debian-linux-gnu.deb
+    # - name: Archive bandcamp_downloader .deb package
+    #   uses: actions/upload-artifact@v1
+    #   with:
+    #     name: bandcamp_downloader-x86_64-debian-linux-gnu
+    #     path: target/debian/bandcamp_downloader-x86_64-debian-linux-gnu.deb
 
   bandcamp_downloader_windows:
     runs-on: windows-latest
@@ -69,6 +70,7 @@ jobs:
         mkdir release_bin
         cp -r intl release_bin/
         cp target/release/bandcamp_downloader.exe release_bin/
+    # TODO include any other windows deps
 
     - name: Archive binary
       uses: actions/upload-artifact@v1
@@ -76,6 +78,7 @@ jobs:
         name: bandcamp_downloader-x86_64-pc-windows-msvc
         path: release_bin/
 
+  # UNTESTED
   bandcamp_downloader_macos:
     runs-on: macOS-latest
     steps:
