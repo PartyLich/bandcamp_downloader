@@ -255,14 +255,16 @@ async fn download_track_stream(
 
         let dir = Path::new(&track.path).parent();
         if let Some(parent_dir) = dir {
-            println!("creating dir {}", parent_dir.to_string_lossy());
-            sender
-                .try_send(Message::Log(
-                    format!("creating dir {}", parent_dir.to_string_lossy()),
-                    LogLevel::Info,
-                ))
-                .expect("Failed to send message");
-            fs::create_dir_all(parent_dir).await?;
+            if !parent_dir.exists() {
+                sender
+                    .try_send(Message::Log(
+                        format!("creating dir {}", parent_dir.to_string_lossy()),
+                        LogLevel::Info,
+                    ))
+                    .expect("Failed to send message");
+
+                fs::create_dir_all(parent_dir).await?;
+            }
         }
 
         println!("creating file {}", &track.path);
