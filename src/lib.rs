@@ -237,7 +237,7 @@ async fn download_track_stream(
     while tries < MAX_TRIES {
         // TODO cancellation
         // Start download
-        let response = reqwest::get(track.mp3_url.as_ref().unwrap()).await;
+        let response = reqwest::get(&track.mp3_url).await;
         if let Err(e) = response {
             if e.is_status() {
                 eprintln!("http error status {}", e.status().unwrap());

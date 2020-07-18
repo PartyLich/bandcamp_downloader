@@ -205,7 +205,7 @@ var PaymentData = {
     tracks: vec![Track {
         duration: 311.327,
         lyrics: None,
-        mp3_url: Some(String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2")),
+        mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"),
         number: 1,
         path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
         title: String::from("Final Lap")

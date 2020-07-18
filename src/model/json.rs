@@ -18,9 +18,8 @@ where
 
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct JsonMp3File {
-    // Some tracks do not have their URL filled on some albums (pre-release...)
     #[serde(rename = "mp3-128")]
-    pub url: Option<String>,
+    pub url: String,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -28,8 +27,9 @@ pub struct JsonTrack {
     #[serde(rename = "duration")]
     pub duration: f32,
 
+    // Some tracks do not have their URL filled on some albums (pre-release...)
     #[serde(rename = "file")]
-    pub file: JsonMp3File,
+    pub file: Option<JsonMp3File>,
 
     #[serde(rename = "lyrics")]
     pub lyrics: Option<String>,
@@ -42,15 +42,14 @@ pub struct JsonTrack {
 }
 
 impl JsonTrack {
-    pub fn into_track(self, album: &Album) -> Track {
-        // "//example.com" Uri lacks protocol
-        let mp3_url = self.file.url.map(|url| {
-            if url.starts_with("//") {
-                format!("http:{}", url)
+    pub fn into_track(self, album: &Album) -> Option<Track> {
+        let mp3_url = self.file.map(|file| {
+            if file.url.starts_with("//") {
+                format!("http:{}", file.url)
             } else {
-                url
+                file.url
             }
-        });
+        })?;
         // For bandcamp track pages, Number will be 0. Set 1 instead
         let number = self.number.or(Some(1));
 
@@ -62,6 +61,7 @@ impl JsonTrack {
             number.unwrap(),
             self.title,
         )
+        .into()
     }
 }
 
@@ -114,8 +114,7 @@ impl JsonAlbum {
         album.tracks = self
             .tracks
             .into_iter()
-            .filter(|t| t.file.url.is_some())
-            .map(|t| t.into_track(&album))
+            .filter_map(|t| t.into_track(&album))
             .collect();
 
         album
@@ -133,7 +132,7 @@ mod test {
         }"#;
         let actual = serde_json::from_str::<JsonMp3File>(test_str).unwrap();
         let expected = JsonMp3File {
-            url: Some(String::from("foo.bar")),
+            url: String::from("foo.bar"),
         };
         assert_eq!(actual, expected);
     }
@@ -147,9 +146,9 @@ mod test {
             title: String::from("Sleepover"),
             number: Some(1),
             lyrics: None,
-            file: JsonMp3File {
-                url:Some(String::from("https://t4.bcbits.com/stream/f19f73f3022113d2e0362cc017a2640f/mp3-128/3291645056?p=0&ts=1593226703&t=c000e57bbab5d336049099dbdad88ee289a8706a&token=1593226703_7712a8c4b48e9e7c5d5658b30794b2bf02cf9392")),
-            }
+            file: Some(JsonMp3File {
+                url:String::from("https://t4.bcbits.com/stream/f19f73f3022113d2e0362cc017a2640f/mp3-128/3291645056?p=0&ts=1593226703&t=c000e57bbab5d336049099dbdad88ee289a8706a&token=1593226703_7712a8c4b48e9e7c5d5658b30794b2bf02cf9392"),
+            })
         };
         assert_eq!(actual, expected);
     }
@@ -215,9 +214,9 @@ mod test {
                 title: String::from("Final Lap"),
                 number: None,
                 lyrics: None,
-                file: JsonMp3File {
-                    url: Some(String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593267872&t=925e5bd0f7f97122898d7e97dc80e17a3effa022&token=1593267872_b7f87b378480f8743677ad5f9adedd8bcfc33dd9"))
-                }
+                file: Some(JsonMp3File {
+                    url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593267872&t=925e5bd0f7f97122898d7e97dc80e17a3effa022&token=1593267872_b7f87b378480f8743677ad5f9adedd8bcfc33dd9")
+                })
             }],
         };
         assert_eq!(actual, expected);

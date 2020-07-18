@@ -14,7 +14,7 @@ pub struct Track {
     pub lyrics: Option<String>,
 
     /// The URL where the track should be downloaded from.
-    pub mp3_url: Option<String>,
+    pub mp3_url: String,
 
     /// The track number.
     pub number: u32,
@@ -32,7 +32,7 @@ impl Track {
         album: &Album,
         duration: f32,
         lyrics: Option<String>,
-        mp3_url: Option<String>,
+        mp3_url: String,
         number: u32,
         title: String,
     ) -> Self {
