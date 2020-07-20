@@ -1,12 +1,14 @@
-use std::{collections::HashSet, path::Path};
+use std::{collections::HashSet, convert::TryFrom, path::Path, sync::Arc};
 
+use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
-use tokio::{fs, io::AsyncWriteExt};
+use tokio::{fs, io::AsyncWriteExt, sync::RwLock};
 
 use error::Error;
 use model::{Album, Track};
+use settings::UserSettings;
 use ui::{LogLevel, Message, Progress};
 
 #[macro_use]
@@ -43,6 +45,21 @@ async fn client_get_url_text(client: &reqwest::Client, url: &str) -> Result<Stri
         .text()
         .await
         .map_err(From::from)
+}
+
+/// Get the content_type and response body (as a vec of bytes) from a url
+async fn get_url_bytes(url: &str) -> Result<(Option<String>, Vec<u8>)> {
+    let res = reqwest::get(url).await?;
+
+    let content_type = res
+        .headers()
+        .get(reqwest::header::CONTENT_TYPE)
+        .and_then(|h| h.to_str().ok())
+        .map(String::from);
+    let bytes = res.bytes().await?;
+    let bytes = bytes.as_ref().to_vec();
+
+    Ok((content_type, bytes))
 }
 
 /// Get artist "music" bandcamp page (http://artist.bandcamp.com/music)
@@ -321,9 +338,112 @@ async fn download_track_stream(
     Err(Error::Download)
 }
 
+/// Apply id3 tag to a track in the supplied Album
+fn tag_track(
+    album: Arc<Album>,
+    track_index: usize,
+    mut sender: mpsc::Sender<Message>,
+    artwork: Option<id3::frame::Picture>,
+) -> Result<()> {
+    let track = album
+        .tracks
+        .get(track_index)
+        .ok_or(Error::Io(String::from("Bad track index")))?;
+    if !Path::new(&track.path).exists() {
+        return Err(Error::Io(String::from("File does not exist")));
+    }
+
+    // Don't overwrite existing tag
+    if let Ok(_) = id3::Tag::read_from_path(&track.path) {
+        sender
+            .try_send(Message::Log(
+                format!(r#"Track already tagged, skipping "{}""#, track.title,),
+                LogLevel::Info,
+            ))
+            .expect("Failed to send message");
+        return Ok(());
+    }
+
+    let mut tag = id3::Tag::new();
+    println!(r#"Tagging track "{}" "#, track.title,);
+    sender
+        .try_send(Message::Log(
+            format!(r#"Tagging track "{}" "#, track.title,),
+            LogLevel::Info,
+        ))
+        .expect("Failed to send message");
+
+    tag.set_album(&album.title);
+    tag.set_artist(&album.artist);
+    tag.set_title(&track.title);
+    tag.set_track(track.number);
+    tag.set_total_tracks(album.tracks.len() as u32);
+    if let Some(lyrics) = &track.lyrics {
+        tag.add_lyrics(id3::frame::Lyrics {
+            lang: String::default(),
+            description: String::default(),
+            text: lyrics.to_string(),
+        })
+    }
+
+    let year = album.release_date.year();
+    let month = u8::try_from(album.release_date.month()).ok();
+    let day = u8::try_from(album.release_date.day()).ok();
+    tag.set_date_released(id3::Timestamp {
+        year,
+        month,
+        day,
+        hour: None,
+        minute: None,
+        second: None,
+    });
+    tag.set_year(year);
+
+    if let Some(artwork) = artwork {
+        tag.add_picture(artwork);
+    }
+
+    tag.add_comment(id3::frame::Comment {
+        lang: "eng".to_string(),
+        description: "".to_string(),
+        text: "Support the artists you enjoy.".to_string(),
+    });
+
+    tag.write_to_path(&track.path, id3::Version::Id3v24)
+        .map_err(|e| Error::Io(e.description.to_string()))
+}
+
+// Download album artwork
+async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
+    if album.artwork_url.is_none() {
+        return Err(Error::NoArtwork);
+    }
+
+    let (mime_type, data) = get_url_bytes(album.artwork_url.as_ref().unwrap()).await?;
+
+    let id3_picture = id3::frame::Picture {
+        mime_type: mime_type.unwrap_or("image/jpeg".to_string()),
+        picture_type: id3::frame::PictureType::CoverFront,
+        description: "".to_string(),
+        data,
+    };
+
+    Ok(id3_picture)
+}
+
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
-    const ALLOWED_FILE_SIZE_DIFFERENCE: f32 = 0.05;
+async fn download_album(
+    album: Album,
+    sender: mpsc::Sender<Message>,
+    settings: Arc<RwLock<UserSettings>>,
+) {
+    let UserSettings {
+        allowed_file_size_difference,
+        save_cover_art_in_folder,
+        save_cover_art_in_tags,
+        ..
+    } = *settings.read().await;
+
     // TODO cancellation
 
     // Create directory to place track files
@@ -333,20 +453,42 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
         return;
     }
 
-    // TODO Download artwork
+    // Download artwork
+    let artwork = if save_cover_art_in_folder || save_cover_art_in_tags {
+        download_artwork(&album).await.ok()
+    } else {
+        None
+    };
 
     // Download tracks
     let mut download_tasks = Vec::with_capacity(album.tracks.len());
     for track in &album.tracks {
         download_tasks.push(tokio::spawn(download_track_stream(
             track.clone(),
-            ALLOWED_FILE_SIZE_DIFFERENCE,
+            allowed_file_size_difference,
             sender.clone(),
         )));
     }
     let tracks_downloaded = join_all(download_tasks).await;
 
-    // TODO Tag tracks
+    // Tag tracks if they do not already have a tag
+    let mut tag_tasks = Vec::with_capacity(album.tracks.len());
+    let album = Arc::new(album);
+    for i in 0..album.tracks.len() {
+        let album = Arc::clone(&album);
+        let sender = sender.clone();
+        let artwork = if save_cover_art_in_tags {
+            artwork.clone()
+        } else {
+            None
+        };
+        tag_tasks.push(tokio::spawn(
+            async move { tag_track(album, i, sender, artwork) },
+        ));
+    }
+    join_all(tag_tasks).await;
+
+    // TODO Save cover art in folder
     // TODO Create playlist file
 }
 
