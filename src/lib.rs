@@ -4,10 +4,11 @@ use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
-use tokio::{fs, io::AsyncWriteExt};
+use tokio::{fs, io::AsyncWriteExt, sync::RwLock};
 
 use error::Error;
 use model::{Album, Track};
+use settings::UserSettings;
 use ui::{LogLevel, Message, Progress};
 
 #[macro_use]
@@ -393,8 +394,18 @@ fn tag_track(
 }
 
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
-    const ALLOWED_FILE_SIZE_DIFFERENCE: f32 = 0.05;
+async fn download_album(
+    album: Album,
+    sender: mpsc::Sender<Message>,
+    settings: Arc<RwLock<UserSettings>>,
+) {
+    let UserSettings {
+        allowed_file_size_difference,
+        save_cover_art_in_folder,
+        save_cover_art_in_tags,
+        ..
+    } = *settings.read().await;
+
     // TODO cancellation
 
     // Create directory to place track files
@@ -411,7 +422,7 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>) {
     for track in &album.tracks {
         download_tasks.push(tokio::spawn(download_track_stream(
             track.clone(),
-            ALLOWED_FILE_SIZE_DIFFERENCE,
+            allowed_file_size_difference,
             sender.clone(),
         )));
     }

@@ -38,13 +38,19 @@ impl DownloadService {
         if settings.download_one_album_at_a_time {
             // Download one album at a time
             for album in albums {
-                crate::download_album(album, sender.clone()).await;
+                crate::download_album(album, sender.clone(), Arc::clone(&self.settings)).await;
             }
         } else {
             // Concurrent download
             let download_tasks: Vec<_> = albums
                 .into_iter()
-                .map(|album| tokio::spawn(crate::download_album(album, sender.clone())))
+                .map(|album| {
+                    tokio::spawn(crate::download_album(
+                        album,
+                        sender.clone(),
+                        Arc::clone(&self.settings),
+                    ))
+                })
                 .collect();
             join_all(download_tasks).await;
         }
