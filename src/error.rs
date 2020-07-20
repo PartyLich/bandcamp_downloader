@@ -10,6 +10,7 @@ pub enum Error {
     NoAlbumData,
     NoAlbumFound,
     NoDiscography,
+    NoArtwork,
     Serialization(String),
 }
 
@@ -21,6 +22,7 @@ impl fmt::Display for Error {
             Self::Io(_) => write!(f, "IO error"),
             Self::NoAlbumData => write!(f, "No album data found for this artist"),
             Self::NoAlbumFound => write!(f, "No album found for this artist"),
+            Self::NoArtwork => write!(f, "No artwork found for this album"),
             Self::NoDiscography => write!(f, "No discography could be found on the supplied url"),
             Self::Serialization(_) => write!(f, "A serialization error occured"),
         }
