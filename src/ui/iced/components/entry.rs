@@ -1,4 +1,4 @@
-use iced::{button, Button, Element, Length, Row, Space};
+use iced::{button, Button, Element, HorizontalAlignment, Length, Row, Space};
 
 use super::{style, styled_text};
 use crate::ui::IntlString;
@@ -50,7 +50,9 @@ impl Entry {
             .push(
                 Button::new(
                     &mut self.ui_state.delete_button,
-                    styled_text(&intl.delete_button).size(12),
+                    styled_text(&intl.delete_button)
+                        .size(12)
+                        .horizontal_alignment(HorizontalAlignment::Center),
                 )
                 .height(Length::Units(22))
                 .min_width(50)
