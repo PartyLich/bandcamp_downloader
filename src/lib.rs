@@ -460,15 +460,18 @@ async fn download_album(
     };
 
     // Download tracks
-    let mut download_tasks = Vec::with_capacity(album.tracks.len());
-    for track in &album.tracks {
-        download_tasks.push(tokio::spawn(download_track_stream(
-            track.clone(),
-            allowed_file_size_difference,
-            download_max_tries,
-            sender.clone(),
-        )));
-    }
+    let download_tasks: Vec<_> = album
+        .tracks
+        .iter()
+        .map(|track| {
+            tokio::spawn(download_track_stream(
+                track.clone(),
+                allowed_file_size_difference,
+                download_max_tries,
+                sender.clone(),
+            ))
+        })
+        .collect();
     join_all(download_tasks).await;
 
     // Tag tracks if they do not already have a tag
