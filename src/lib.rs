@@ -440,6 +440,7 @@ async fn download_album(
         allowed_file_size_difference,
         save_cover_art_in_folder,
         save_cover_art_in_tags,
+        modify_tags,
         download_max_tries,
         ..
     } = *settings.read().await;
@@ -473,21 +474,23 @@ async fn download_album(
     let tracks_downloaded = join_all(download_tasks).await;
 
     // Tag tracks if they do not already have a tag
-    let mut tag_tasks = Vec::with_capacity(album.tracks.len());
-    let album = Arc::new(album);
-    for i in 0..album.tracks.len() {
-        let album = Arc::clone(&album);
-        let sender = sender.clone();
-        let artwork = if save_cover_art_in_tags {
-            artwork.clone()
-        } else {
-            None
-        };
-        tag_tasks.push(tokio::spawn(
-            async move { tag_track(album, i, sender, artwork) },
-        ));
+    if modify_tags {
+        let mut tag_tasks = Vec::with_capacity(album.tracks.len());
+        let album = Arc::new(album);
+        for i in 0..album.tracks.len() {
+            let album = Arc::clone(&album);
+            let sender = sender.clone();
+            let artwork = if save_cover_art_in_tags {
+                artwork.clone()
+            } else {
+                None
+            };
+            tag_tasks.push(tokio::spawn(
+                async move { tag_track(album, i, sender, artwork) },
+            ));
+        }
+        join_all(tag_tasks).await;
     }
-    join_all(tag_tasks).await;
 
     // TODO Save cover art in folder
     // TODO Create playlist file

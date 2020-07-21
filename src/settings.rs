@@ -63,6 +63,9 @@ pub struct UserSettings {
     pub download_retry_cooldown: f64,
 
     pub file_name_format: String,
+
+    pub modify_tags: bool,
+
     pub playlist_file_name_format: String,
     pub cover_art_file_name_format: String,
 
@@ -110,6 +113,7 @@ impl Default for UserSettings {
 
             save_cover_art_in_folder: false,
             save_cover_art_in_tags: true,
+            modify_tags: true,
 
             show_verbose_log: false,
         }
