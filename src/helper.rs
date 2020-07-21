@@ -34,7 +34,7 @@ fn get_album_data(raw_html: &str) -> Result<String> {
         static ref ALBUM_DATA_RE: Regex =
             regex::Regex::new(r"(?s)var TralbumData = (?P<data>\{.*?\});").unwrap();
         static ref COMMENTS_RE: Regex = Regex::new(r"(?m)^\s*?//.*$").unwrap();
-        static ref TAIL_COMMENTS_RE: Regex = Regex::new(r"(?m)^(?:.*\s*?)(\s//.*)$").unwrap();
+        static ref TAIL_COMMENTS_RE: Regex = Regex::new(r"(?m)^(?:.*\s*?,)(\s//.*)$").unwrap();
         static ref QUOTE_KEYS_RE: Regex =
             Regex::new(r"(?m)^(?P<whitespace>\s*)(?P<key>\w*?):").unwrap();
     }
@@ -159,7 +159,7 @@ mod test {
     album_is_preorder: null,
     album_release_date: null,
     art_id: 2129006133,
-    trackinfo: [{"play_count":0,"is_draft":false,"free_album_download":false,"title":"Final Lap","video_caption":null,"title_link":"/track/final-lap","track_id":350943074,"is_capped":false,"sizeof_lyrics":0,"encodings_id":1928142095,"video_featured":null,"lyrics":null,"duration":311.327,"has_lyrics":false,"video_source_type":null,"alt_link":null,"streaming":1,"has_info":false,"private":null,"track_license_id":null,"video_source_id":null,"track_num":null,"encoding_error":null,"video_id":null,"is_downloadable":true,"license_type":1,"id":350943074,"video_mobile_url":null,"album_preorder":false,"encoding_pending":null,"has_free_download":null,"file":{"mp3-128":"https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"},"video_poster_url":null,"unreleased_track":false}],
+    trackinfo: [{"play_count":0,"is_draft":false,"free_album_download":false,"title":"Final Lap","video_caption":null,"title_link":"/track/final-lap","track_id":350943074,"is_capped":false,"sizeof_lyrics":0,"encodings_id":1928142095,"video_featured":null,"lyrics":null,"duration":311.327,"has_lyrics":false,"video_source_type":null,"alt_link":null,"streaming":1,"has_info":false,"private":null,"track_license_id":null,"video_source_id":null,"track_num":null,"encoding_error":null,"video_id":null,"is_downloadable":true,"license_type":1,"id":350943074,"video_mobile_url":null,"album_preorder":false,"encoding_pending":null,"has_free_download":null,"file":{"mp3-128":"https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"},"video_poster_url":null,"unreleased_track":false}, {"track_license_id":null,"encoding_error":null,"is_downloadable":true,"license_type":1,"file":{"mp3-128":"https://t4.bcbits.com/stream/db1af2e5f68f45ba5647560e4e81b2ad/mp3-128/120295245?p=0&ts=1595393447&t=645c963dc20bd86ef5b86c569fde8e01b02c5834&token=1595393447_8d168bda6e5bee441f98d072e6ca39a0f647c369"},"video_mobile_url":null,"album_preorder":false,"encoding_pending":null,"has_free_download":null,"video_poster_url":null,"unreleased_track":false,"track_id":120295245,"play_count":null,"is_draft":false,"free_album_download":false,"encodings_id":4242834731,"title":"Glancing Blows // Nights","video_caption":null,"duration":345.882,"title_link":"/track/glancing-blows-nights","is_capped":null,"sizeof_lyrics":0,"video_featured":null,"lyrics":null,"streaming":1,"has_lyrics":false,"private":null,"video_id":null,"video_source_type":null,"alt_link":null,"has_info":false,"id":120295245,"video_source_id":null,"track_num":6}],
     playing_from: "track page",
     packages: null,
     album_url: null,
@@ -193,24 +193,34 @@ var PaymentData = {
         let msg = "builds Album object from html";
         let expected = Album {
             artist: String::from("The Racers"),
-    artwork_path: String::from(""),
-    artwork_temp_path: String::from(""),
-    artwork_url: Some(String::from("https://f4.bcbits.com/img/a2129006133_0.jpg")),
-    path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap"),
-    playlist_path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/2020_Final Lap"),
-    title: String::from("Final Lap"),
+            artwork_path: String::from(""),
+            artwork_temp_path: String::from(""),
+            artwork_url: Some(String::from("https://f4.bcbits.com/img/a2129006133_0.jpg")),
+            path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap"),
+            playlist_path: String::from(
+                "/home/partylich/music/test/The Racers/2020 - Final Lap/2020_Final Lap",
+            ),
+            title: String::from("Final Lap"),
             release_date: Utc
                 .datetime_from_str("24 Apr 2020 00:00:00 +0000", "%d %b %Y %T %z")
                 .unwrap(),
-    tracks: vec![Track {
-        duration: 311.327,
-        lyrics: None,
-        mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"),
-        number: 1,
-        path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
-        title: String::from("Final Lap")
-    }],
-};
+            tracks: vec![Track {
+                duration: 311.327,
+                lyrics: None,
+                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"),
+                number: 1,
+                path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
+                title: String::from("Final Lap")
+            },
+            Track {
+                duration: 345.822,
+                lyrics: None,
+                mp3_url: String::from("https://t4.bcbits.com/stream/db1af2e5f68f45ba5647560e4e81b2ad/mp3-128/120295245?p=0&ts=1595393447&t=645c963dc20bd86ef5b86c569fde8e01b02c5834&token=1595393447_8d168bda6e5bee441f98d072e6ca39a0f647c369"),
+                number: 1,
+                path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/06 - Glancing Blows  Nights.mp3"),
+                title: String::from("Glancing Blows // Nights")
+            }],
+        };
         let save_dir = "/home/partylich/music/test/{artist}/{year} - {album}";
         let actual = get_album(&raw_html, save_dir).unwrap();
         assert_eq!(actual, expected, "{}", msg);
