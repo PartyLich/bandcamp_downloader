@@ -79,7 +79,7 @@ pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
     let album_data = get_album_data(&album_data)?;
     // Deserialize JSON
     // TODO serializer interface
-    let album = serde_json::from_str::<JsonAlbum>(&album_data)?.to_album(folder_path);
+    let album = serde_json::from_str::<JsonAlbum>(&album_data)?.into_album(folder_path);
 
     // TODO lyrics
     // Extract lyrics from album page

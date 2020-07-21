@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use iced::{button, scrollable, text_input, Column, Container, Element, Length, Row, Space};
+use iced::{button, scrollable, text_input, Column, Container, Element, Length};
 
 use super::UrlState;
 use crate::ui::{

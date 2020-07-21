@@ -1,9 +1,7 @@
 //! UI implementation using iced crate
-use std::sync::Arc;
-
 use iced::Application;
 
-use crate::{core::DownloadService, settings::UserSettings, ui};
+use crate::{settings::UserSettings, ui};
 use app::{App, AppFlags};
 use components::EntryMessage;
 
@@ -18,10 +16,7 @@ pub struct IcedUi {}
 
 impl ui::Ui for IcedUi {
     fn run(&self, user_settings: UserSettings) {
-
-        App::run(App::default_settings(AppFlags {
-            user_settings,
-        }));
+        App::run(App::default_settings(AppFlags { user_settings }));
     }
 }
 

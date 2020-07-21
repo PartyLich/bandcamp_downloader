@@ -1,4 +1,4 @@
-use iced::{Align, Container, Length, Row};
+use iced::{Align, Row};
 use iced::{Element, TextInput};
 
 use super::TEXT_SIZE;

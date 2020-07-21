@@ -91,7 +91,7 @@ pub struct JsonAlbum {
 }
 
 impl JsonAlbum {
-    pub fn to_album(self, folder_path: &str) -> Album {
+    pub fn into_album(self, folder_path: &str) -> Album {
         const URL_END: &str = "_0.jpg";
         // Uses the art_id variable to retrieve the image from Bandcamp hosting site
         const URL_START: &str = "https://f4.bcbits.com/img/a";

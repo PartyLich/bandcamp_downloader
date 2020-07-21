@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 
-use super::{json::JsonAlbum, Track};
+use super::Track;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Album {

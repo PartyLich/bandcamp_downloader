@@ -203,7 +203,7 @@ pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Al
 
     // Get info on albums
     // Get URLs of albums to download
-    let albums = if discography {
+    if discography {
         println!("collecting discography urls");
         let url_list = get_artist_discography(&urls).await;
         let urls = url_list.iter().map(|s| s.as_str()).collect();
@@ -211,9 +211,7 @@ pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Al
         get_albums(urls, save_dir).await.expect("FIXME")
     } else {
         get_albums(urls, save_dir).await.expect("FIXME")
-    };
-
-    albums
+    }
 }
 
 async fn download_track_stream(
@@ -347,13 +345,13 @@ fn tag_track(
     let track = album
         .tracks
         .get(track_index)
-        .ok_or(Error::Io(String::from("Bad track index")))?;
+        .ok_or_else(|| Error::Io(String::from("Bad track index")))?;
     if !Path::new(&track.path).exists() {
         return Err(Error::Io(String::from("File does not exist")));
     }
 
     // Don't overwrite existing tag
-    if let Ok(_) = id3::Tag::read_from_path(&track.path) {
+    if id3::Tag::read_from_path(&track.path).is_ok() {
         sender
             .try_send(Message::Log(
                 format!(r#"Track already tagged, skipping "{}""#, track.title,),
@@ -421,7 +419,7 @@ async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
     let (mime_type, data) = get_url_bytes(album.artwork_url.as_ref().unwrap()).await?;
 
     let id3_picture = id3::frame::Picture {
-        mime_type: mime_type.unwrap_or("image/jpeg".to_string()),
+        mime_type: mime_type.unwrap_or_else(|| "image/jpeg".to_string()),
         picture_type: id3::frame::PictureType::CoverFront,
         description: "".to_string(),
         data,
@@ -471,7 +469,7 @@ async fn download_album(
             sender.clone(),
         )));
     }
-    let tracks_downloaded = join_all(download_tasks).await;
+    join_all(download_tasks).await;
 
     // Tag tracks if they do not already have a tag
     if modify_tags {
