@@ -219,10 +219,9 @@ pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Al
 async fn download_track_stream(
     track: Track,
     allowed_file_size_difference: f32,
+    max_tries: u32,
     mut sender: mpsc::Sender<Message>,
 ) -> Result<()> {
-    const MAX_TRIES: u32 = 4;
-
     println!(
         r#"Downloading track "{}" from url: {:?}"#,
         track.title, track.mp3_url
@@ -251,7 +250,7 @@ async fn download_track_stream(
     }
 
     let mut tries = 0u32;
-    while tries < MAX_TRIES {
+    while tries < max_tries {
         // TODO cancellation
         // Start download
         let response = reqwest::get(&track.mp3_url).await;
@@ -441,6 +440,7 @@ async fn download_album(
         allowed_file_size_difference,
         save_cover_art_in_folder,
         save_cover_art_in_tags,
+        download_max_tries,
         ..
     } = *settings.read().await;
 
@@ -466,6 +466,7 @@ async fn download_album(
         download_tasks.push(tokio::spawn(download_track_stream(
             track.clone(),
             allowed_file_size_difference,
+            download_max_tries,
             sender.clone(),
         )));
     }

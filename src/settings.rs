@@ -53,6 +53,8 @@ pub struct UserSettings {
     pub check_for_updates: bool,
 
     pub download_artist_discography: bool,
+
+    pub download_max_tries: u32,
     pub download_one_album_at_a_time: bool,
     pub download_albums_serial: bool,
     pub downloads_path: PathBuf,
@@ -101,6 +103,7 @@ impl Default for UserSettings {
             download_one_album_at_a_time: false,
             download_albums_serial: false,
             downloads_path,
+            download_max_tries: 7,
             download_retry_cooldown: 0.2,
 
             retrieve_files_size: true,
