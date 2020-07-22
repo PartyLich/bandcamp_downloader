@@ -543,4 +543,22 @@ mod test {
         expected.sort();
         assert_eq!(actual, expected,);
     }
+
+    #[test]
+    fn adds_http_protocol() {
+        let s = "foobar.bandcamp.com/";
+        let expected = String::from("http://foobar.bandcamp.com/");
+        let actual = prepend_http(s);
+        assert_eq!(actual, expected,);
+
+        let s = "http://foobar.bandcamp.com/";
+        let expected = String::from("http://foobar.bandcamp.com/");
+        let actual = prepend_http(s);
+        assert_eq!(actual, expected,);
+
+        let s = "https://foobar.bandcamp.com/";
+        let expected = String::from("https://foobar.bandcamp.com/");
+        let actual = prepend_http(s);
+        assert_eq!(actual, expected,);
+    }
 }
