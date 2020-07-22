@@ -237,6 +237,13 @@ pub async fn fetch_urls(
     }
 }
 
+/// Compare file size and return true if size on disk is within the provided threshold
+fn file_size_ok(allowed_difference: f64, size_on_disk: f64, new_file_size: f64) -> bool {
+    let margin = size_on_disk * allowed_difference;
+    println!("allowed diff {} margin: {}", allowed_difference, margin);
+    new_file_size > size_on_disk - margin && new_file_size < size_on_disk + margin
+}
+
 /// Downloads a track. Returns `Ok()` if the track has been correctly downloaded; Err otherwise.
 async fn download_track_stream(
     track: Track,
@@ -254,23 +261,6 @@ async fn download_track_stream(
             LogLevel::Info,
         ))
         .expect("Failed to send message");
-
-    if Path::new(&track.path).exists() {
-        let file_length = fs::metadata(&track.path)
-            .await
-            .unwrap_or_else(|_| panic!("Unable to stat file {}", track.path))
-            .len();
-
-        println!("file already exists {}. Size: {}", &track.path, file_length);
-        sender
-            .try_send(Message::Log(
-                format!("file already exists {}. Size: {}", &track.path, file_length),
-                LogLevel::Info,
-            ))
-            .expect("Failed to send message");
-        // TODO: redownload if size exceeds allowed difference
-        return Err(Error::Io(String::from("File already exists")));
-    }
 
     let mut tries = 0u32;
     while tries < max_tries {
@@ -292,7 +282,31 @@ async fn download_track_stream(
         }
         let mut response = response.unwrap();
 
-        let dir = Path::new(&track.path).parent();
+        let total_size = response.content_length().unwrap_or(0);
+        let track_path = Path::new(&track.path);
+        if track_path.exists() {
+            let size_on_disk = fs::metadata(&track.path)
+                .await
+                .unwrap_or_else(|_| panic!("Unable to stat file {}", track.path))
+                .len();
+
+            if file_size_ok(
+                allowed_file_size_difference as f64,
+                size_on_disk as f64,
+                total_size as f64,
+            ) {
+                sender.try_send(Message::Log(
+                    format!(
+                        "Track already exists within allowed file size range: \"{:?}\" - Skipping download!",
+                        track_path.file_name().unwrap()),
+                        LogLevel::Info,
+                    ))
+                    .expect("Failed to send message");
+                return Err(Error::Io(String::from("File already exists")));
+            }
+        }
+
+        let dir = track_path.parent();
         if let Some(parent_dir) = dir {
             if !parent_dir.exists() {
                 sender
@@ -311,7 +325,6 @@ async fn download_track_stream(
         println!("file created");
 
         let mut downloaded = 0;
-        let total_size = response.content_length().unwrap_or(0);
         while let Some(chunk) = response.chunk().await? {
             destination.write_all(&chunk).await?;
 
@@ -336,19 +349,13 @@ async fn download_track_stream(
 
         println!(
             "Downloaded track \"{}\" ",
-            Path::new(&track.path)
-                .file_name()
-                .unwrap()
-                .to_string_lossy(),
+            track_path.file_name().unwrap().to_string_lossy(),
         );
         sender
             .try_send(Message::Log(
                 format!(
                     "Downloaded track \"{}\" ",
-                    Path::new(&track.path)
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy(),
+                    track_path.file_name().unwrap().to_string_lossy(),
                 ),
                 LogLevel::Info,
             ))
