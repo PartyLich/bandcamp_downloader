@@ -1,3 +1,4 @@
+//! Functions for downloading mp3s from bandcamp
 use std::{collections::HashSet, convert::TryFrom, path::Path, sync::Arc};
 
 use chrono::Datelike;
@@ -214,6 +215,7 @@ pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Al
     }
 }
 
+/// Downloads a track. Returns `Ok()` if the track has been correctly downloaded; Err otherwise.
 async fn download_track_stream(
     track: Track,
     allowed_file_size_difference: f32,
