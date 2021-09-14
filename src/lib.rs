@@ -92,7 +92,7 @@ async fn get_disco_urls(client: &reqwest::Client, url: &str) -> Result<Vec<Strin
     let music_page_url = match get_music_page_url(client, url).await {
         Ok(res) => res,
         Err(e) => {
-            println!("Could not retrieve data for {}", url);
+            println!("Could not retrieve music page url for {}", url);
             return Err(e);
         }
     };
@@ -101,7 +101,7 @@ async fn get_disco_urls(client: &reqwest::Client, url: &str) -> Result<Vec<Strin
     let raw_html = match client_get_url_text(client, &music_page_url).await {
         Ok(res) => res,
         Err(e) => {
-            println!("Could not retrieve data for {}", music_page_url);
+            println!("Could not retrieve HTML for {}", music_page_url);
             return Err(e);
         }
     };
@@ -156,7 +156,7 @@ async fn get_albums(urls: HashSet<&str>, save_dir: &str) -> Result<Vec<Album>> {
             let raw_html = match client_get_url_text(&client, url).await {
                 Ok(res) => res,
                 Err(_) => {
-                    println!("Could not retrieve data for {}", url);
+                    println!("Could not retrieve html for {}", url);
                     return None;
                 }
             };
