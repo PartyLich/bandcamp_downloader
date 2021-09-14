@@ -27,7 +27,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 
 lazy_static! {
     /// Band url parsing
-    static ref BAND_RE: Regex = Regex::new("band_url = \"(?P<url>.*)\"").unwrap();
+    static ref BAND_RE: Regex = Regex::new(r#"(?m)"desktop-header">\s*<a href="(?P<url>.*?)".*?</a>"#).unwrap();
     /// album and track url parsing
     static ref ALBUM_RE: Regex = Regex::new("href=\"(?P<album_url>/(album|track)/.*?)\"").unwrap();
 }
@@ -75,14 +75,13 @@ async fn get_music_page_url(client: &reqwest::Client, url: &str) -> Result<Strin
     };
 
     // Get artist "music" bandcamp page (http://artist.bandcamp.com/music)
-    let captures = BAND_RE.captures(&raw_html);
-    if captures.is_none() {
-        println!("No discography could be found on {}. Try to uncheck the \"Download artist discography\" option", url);
-        return Err(Error::NoDiscography);
-    }
-
-    let music_page_url = captures.unwrap().name("url").unwrap().as_str();
-    Ok(format!("{}{}", music_page_url, "/music"))
+    BAND_RE.captures(&raw_html)
+        .and_then(|captures| captures.name("url"))
+        .map(|url| format!("{}{}", url.as_str(), "/music"))
+        .ok_or_else(|| {
+            println!("No discography could be found on {}. Try to uncheck the \"Download artist discography\" option", url);
+            Error::NoDiscography
+        })
 }
 
 /// Returns the artist's discography from any URL (artist, album, track).
@@ -504,6 +503,18 @@ mod test {
     use super::*;
     use chrono::{DateTime, TimeZone, Utc};
 
+    #[test]
+    fn band_regex() {
+        let s = r#"<div class="desktop-header">
+            <a href="https://theracers.bandcamp.com" referrerpolicy="strict-origin-when-cross-origin"><img src="https://f4.bcbits.com/img/0024058603_100.png" width="975" height="180"></a>
+
+        </div>"#;
+
+        let expected = String::from("https://theracers.bandcamp.com");
+        let actual = BAND_RE.captures(&s).unwrap().name("url").unwrap().as_str();
+        assert_eq!(actual, expected);
+    }
+
     #[tokio::test]
     async fn get_html_text() {
         let msg = "Gets the content at url in utf8 text form";
@@ -525,6 +536,16 @@ mod test {
     }
 
     #[tokio::test]
+    async fn gets_music_page() {
+        let client = reqwest::Client::new();
+        let url = "https://theracers.bandcamp.com/";
+
+        let expected = "https://theracers.bandcamp.com/music";
+        let actual = get_music_page_url(&client, url).await.unwrap();
+        assert_eq!(actual, expected,);
+    }
+
+    #[tokio::test]
     async fn gets_discography() {
         let urls: HashSet<_> = vec![
             "https://moter.bandcamp.com/album/wave-transmission",
@@ -534,11 +555,15 @@ mod test {
         .collect();
 
         let mut expected: Vec<_> = vec![
-            "http://moter.bandcamp.com/album/moter-ep",
-            "http://moter.bandcamp.com/album/last-train-to-synthville",
-            "http://theracers.bandcamp.com/track/final-lap",
-            "http://moter.bandcamp.com/album/wave-transmission",
-            "http://moter.bandcamp.com/album/omegadriver",
+            "https://moter.bandcamp.com/album/moter-ep",
+            "https://moter.bandcamp.com/album/last-train-to-synthville",
+            "https://moter.bandcamp.com/album/wave-transmission",
+            "https://moter.bandcamp.com/album/omegadriver",
+            "https://moter.bandcamp.com/album/aerodnmx",
+            "https://theracers.bandcamp.com/track/tunnel-vision",
+            "https://theracers.bandcamp.com/track/deep-blue-the-racers-feat-jim-gauntner-remix",
+            "https://theracers.bandcamp.com/album/the-midnight-by-the-racers-i",
+            "https://theracers.bandcamp.com/track/final-lap",
         ];
         let mut actual = get_artist_discography(&urls).await;
         actual.sort();
