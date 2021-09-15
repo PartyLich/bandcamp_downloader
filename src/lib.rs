@@ -30,6 +30,7 @@ lazy_static! {
     static ref BAND_RE: Regex = Regex::new(r#"(?m)"desktop-header">\s*<a href="(?P<url>.*?)".*?</a>"#).unwrap();
     /// album and track url parsing
     static ref ALBUM_RE: Regex = Regex::new("href=\"(?P<album_url>/(album|track)/.*?)\"").unwrap();
+    static ref HTML_QUOTE_RE: Regex = Regex::new(r#"&quot;"#).unwrap();
 }
 
 /// Get text from a url using the reqwest shortcut method
@@ -513,6 +514,21 @@ mod test {
         let expected = String::from("https://theracers.bandcamp.com");
         let actual = BAND_RE.captures(&s).unwrap().name("url").unwrap().as_str();
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn html_quote_regex() {
+        let s = r#"data-tralbum="{&quot;url&quot;:&quot;}""#;
+
+        let msg = "should find html escaped quotes";
+        let expected = true;
+        let actual = HTML_QUOTE_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped quotes";
+        let expected = r#"data-tralbum="{"url":"}""#;
+        let actual = HTML_QUOTE_RE.replace_all(&s, "\"");
+        assert_eq!(actual, expected, "{}", msg);
     }
 
     #[tokio::test]
