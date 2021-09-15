@@ -39,9 +39,11 @@ impl App {
     pub fn new(flags: AppFlags) -> Self {
         let AppFlags { user_settings } = flags;
         let (sender, receiver) = mpsc::channel(50);
-        let mut ui_state = main_view::State::default();
-        ui_state.download_discography = user_settings.download_artist_discography;
-        ui_state.save_dir = user_settings.downloads_path.to_string_lossy().to_string();
+        let ui_state = main_view::State {
+            download_discography: user_settings.download_artist_discography,
+            save_dir: user_settings.downloads_path.to_string_lossy().to_string(),
+            ..main_view::State::default()
+        };
         let user_settings = Arc::new(RwLock::new(user_settings));
         let download_service = DownloadService::new(Arc::clone(&user_settings));
 
@@ -145,7 +147,7 @@ impl Application for App {
             Message::ClearUrls => {
                 self.clear_urls();
             }
-            Message::UrlMessage(i, entry_message) => match entry_message {
+            Message::Url(i, entry_message) => match entry_message {
                 EntryMessage::Delete => {
                     self.ui_state.url_state.url_list.remove(i);
                 }

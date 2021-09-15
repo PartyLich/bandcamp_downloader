@@ -4,7 +4,7 @@ use serde_json::error::Category;
 
 #[derive(Debug, Clone)]
 pub enum Error {
-    APIError,
+    API,
     Download,
     Io(String),
     NoAlbumData,
@@ -17,7 +17,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
-            Self::APIError => write!(f, "API error occured"),
+            Self::API => write!(f, "API error occured"),
             Self::Download => write!(f, "Download error"),
             Self::Io(_) => write!(f, "IO error"),
             Self::NoAlbumData => write!(f, "No album data found for this artist"),
@@ -33,7 +33,7 @@ impl From<reqwest::Error> for Error {
     fn from(error: reqwest::Error) -> Error {
         dbg!(error);
 
-        Error::APIError
+        Error::API
     }
 }
 

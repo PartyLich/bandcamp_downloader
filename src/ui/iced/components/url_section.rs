@@ -60,7 +60,7 @@ pub fn url_section<'a>(state: &'a mut UrlState, intl: &IntlString) -> Container<
                 container.push(
                     entry
                         .view(intl)
-                        .map(move |message| Message::UrlMessage(i, message)),
+                        .map(move |message| Message::Url(i, message)),
                 )
             });
     let scroll = Scrollable::new(&mut state.scroll_state)

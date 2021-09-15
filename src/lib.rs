@@ -154,7 +154,7 @@ async fn get_albums(urls: HashSet<&str>, save_dir: &str) -> Result<Vec<Album>> {
             // TODO proxy support
             // TODO cancellation
 
-            let raw_html = match client_get_url_text(&client, url).await {
+            let raw_html = match client_get_url_text(client, url).await {
                 Ok(res) => res,
                 Err(_) => {
                     println!("Could not retrieve html for {}", url);

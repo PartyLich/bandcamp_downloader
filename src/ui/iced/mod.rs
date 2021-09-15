@@ -38,6 +38,6 @@ pub enum Message {
     ClearUrls,
     SetSaveDir,
     DownloadsComplete(()),
-    UrlMessage(usize, EntryMessage),
+    Url(usize, EntryMessage),
     SettingsChanged(SettingType),
 }

@@ -150,7 +150,7 @@ impl Album {
         file_path.set_extension(&file_ext);
 
         if cfg!(target_os = "windows") {
-            file_path = Self::truncate_win_path(&self.path, &playlist_filename, &file_ext);
+            file_path = Self::truncate_win_path(&self.path, &playlist_filename, file_ext);
         }
 
         file_path.to_string_lossy().into()

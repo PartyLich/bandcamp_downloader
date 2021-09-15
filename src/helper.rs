@@ -87,7 +87,7 @@ pub fn get_albums_url(raw_html: &str) -> Result<Vec<String>> {
         .as_str();
 
     // Get albums ("real" albums or track-only pages) relative urls
-    let captures = ALBUM_RE.captures_iter(&raw_html);
+    let captures = ALBUM_RE.captures_iter(raw_html);
 
     let mut album_urls = HashSet::new();
     for cap in captures {
