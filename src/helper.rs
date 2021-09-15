@@ -163,7 +163,7 @@ mod test {
 
     #[tokio::test]
     async fn gets_album() {
-        let msg = "builds Album object from html";
+        let msg = "should build Album object from html string";
         let expected = Album {
             artist: String::from("The Racers"),
             artwork_path: String::from(""),
@@ -209,8 +209,9 @@ mod test {
 
     #[test]
     fn format_filename() {
+        let msg = "should replace reserved chars with '_'";
         let expected = "Foo_________Bar";
         let actual = sanitize_file_name(r#"Foo?*/\|<>:"Bar   ..."#);
-        assert_eq!(actual, expected);
+        assert_eq!(actual, expected, "{}", msg);
     }
 }
