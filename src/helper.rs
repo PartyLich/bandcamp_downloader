@@ -250,56 +250,147 @@ var PaymentData = {
     #[test]
     fn gets_albums_url() {
         let raw_html = r#"
-        var band_url = "http://projectmooncircle.bandcamp.com";
+        <div class="desktop-header">
+            <a href="https://moter.bandcamp.com" referrerpolicy="strict-origin-when-cross-origin"><img src="https://f4.bcbits.com/img/0024058603_100.png" width="975" height="180"></a>
 
-        <ol class="editable-grid music-grid columns-4   public" data-edit-callback="/music_reorder">
-            <li data-item-id="album-3655789805" data-band-id="4055192856" class="music-grid-item square first-four " data-bind="css: {'featured': featured()}">
-    <a href="/album/silent-opera">
-        <div class="art">
-                <img src="https://f4.bcbits.com/img/a2796464951_2.jpg" alt="">
         </div>
-        <p class="title">
-            Silent Opera
-                <br><span class="artist-override">
-                Long Arm
-                </span>
-        </p>
-    </a>
-</li>
-            <li data-item-id="album-1556143258" data-band-id="4055192856" class="music-grid-item square
+
+<ol id="music-grid" data-edit-callback="/music_reorder" class="
+        editable-grid music-grid columns-3
+
+
+        public
+    ">
+
+
+            <li data-item-id="album-1761080842" data-band-id="992143159" class="music-grid-item square first-four
+
     " data-bind="css: {'featured': featured()}">
-    <a href="/album/audio-alchemy">
+    <a href="/album/aerodnmx">
+
         <div class="art">
-                <img class="lazy" src="/img/0.gif" data-original="https://f4.bcbits.com/img/a2189627774_2.jpg" alt="">
+
+
+                <img src="https://f4.bcbits.com/img/a1224476602_2.jpg" alt="">
+
+
+
+
         </div>
+
         <p class="title">
-            Audio Alchemy
+            Aerodnmx
+
         </p>
+
     </a>
 </li>
-            <li data-item-id="album-1965508264" data-band-id="4055192856" class="music-grid-item square
+
+            <li data-item-id="album-3329240663" data-band-id="992143159" class="music-grid-item square first-four
+
     " data-bind="css: {'featured': featured()}">
-    <a href="/album/the-lucid-effect">
+    <a href="/album/last-train-to-synthville">
+
         <div class="art">
-                <img class="lazy" src="/img/0.gif" data-original="https://f4.bcbits.com/img/a3631959610_2.jpg" alt="">
+
+
+                <img src="https://f4.bcbits.com/img/a3661726480_2.jpg" alt="">
+
+
+
+
         </div>
+
         <p class="title">
-            The Lucid Effect
-                <br><span class="artist-override">
-                40 Winks
-                </span>
+            Last Train To Synthville
+
         </p>
+
     </a>
 </li>
+
+            <li data-item-id="album-3085007057" data-band-id="992143159" class="music-grid-item square first-four
+
+    " data-bind="css: {'featured': featured()}">
+    <a href="/album/wave-transmission">
+
+        <div class="art">
+
+
+                <img src="https://f4.bcbits.com/img/a1375292380_2.jpg" alt="">
+
+
+
+
+        </div>
+
+        <p class="title">
+            Wave Transmission
+
+        </p>
+
+    </a>
+</li>
+
+            <li data-item-id="album-2214411790" data-band-id="992143159" class="music-grid-item square first-four
+
+    " data-bind="css: {'featured': featured()}">
+    <a href="/album/omegadriver">
+
+        <div class="art">
+
+
+                <img src="https://f4.bcbits.com/img/a1802906128_2.jpg" alt="">
+
+
+
+
+        </div>
+
+        <p class="title">
+            Omegadriver
+
+        </p>
+
+    </a>
+</li>
+
+            <li data-item-id="album-3563048759" data-band-id="992143159" class="music-grid-item square
+
+    " data-bind="css: {'featured': featured()}">
+    <a href="/album/moter-ep">
+
+        <div class="art">
+
+
+                <img src="https://f4.bcbits.com/img/a3170427267_2.jpg" alt="">
+
+
+
+
+        </div>
+
+        <p class="title">
+            MoTER (Ep)
+
+        </p>
+
+    </a>
+</li>
+
+
 </ol>
         "#;
-        let expected = vec![
-            "http://projectmooncircle.bandcamp.com/album/audio-alchemy",
-            "http://projectmooncircle.bandcamp.com/album/silent-opera",
-            "http://projectmooncircle.bandcamp.com/album/the-lucid-effect",
+        let mut expected = vec![
+            "https://moter.bandcamp.com/album/moter-ep",
+            "https://moter.bandcamp.com/album/last-train-to-synthville",
+            "https://moter.bandcamp.com/album/wave-transmission",
+            "https://moter.bandcamp.com/album/omegadriver",
+            "https://moter.bandcamp.com/album/aerodnmx",
         ];
         let mut actual = get_albums_url(raw_html).unwrap();
         actual.sort();
+        expected.sort();
         assert_eq!(actual, expected);
     }
 
