@@ -16,6 +16,12 @@ jobs:
       - name: Install cargo-deb
         run: cargo install cargo-deb
 
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTED=noninteractive
+          sudo apt-get -qq update
+          sudo apt-get install -y libxkbcommon-dev
+
       - name: Checkout
         uses: actions/checkout@master
 
