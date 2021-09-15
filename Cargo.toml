@@ -1,0 +1,31 @@
+[package]
+name = "bandcamp_downloader"
+version = "0.0.0"
+license = "AGPL-3.0-only"
+publish = false
+authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
+edition = "2018"
+repository = "https://github.com/PartyLich/bandcamp_downloader"
+description = "Multiplatform app used to download albums from Bandcamp"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.55"
+futures = "0.3.5"
+regex = "1.3.9"
+lazy_static = "1.4.0"
+chrono = { version = "0.4.11", features = ["serde"] }
+iced = {version= "0.1.1", features = ["image", "debug", "tokio"] }
+iced_native = "0.2.2"
+iced_futures = "0.1.2"
+dirs = "3.0.1"
+id3 = "0.5.1"
+
+[dependencies.reqwest]
+version = "0.10.6"
+features = ["stream"]
+
+[dependencies.tokio]
+# futures executor
+version = "0.2.21"
+features = ["rt-core", "macros", "fs", "io-util"]
