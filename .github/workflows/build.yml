@@ -7,30 +7,34 @@ jobs:
   bandcamp_downloader_linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-    - name: Install cargo-deb
-      run: cargo install cargo-deb
-    - uses: actions/checkout@master
+      - name: Setup Rust
+        uses: hecrj/setup-rust-action@v1
 
-    - name: Enable Link Time Optimizations
-      run: |
-        echo "[profile.release]" >> Cargo.toml
-        echo "lto = true" >> Cargo.toml
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
 
-    - name: Build binary
-      run: cargo build --verbose --release
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Create release dir
-      run: |
-        mkdir linux_bin
-        cp -r intl linux_bin/
-        cp target/release/bandcamp_downloader linux_bin/
+      - name: Enable Link Time Optimizations
+        run: |
+          echo "[profile.release]" >> Cargo.toml
+          echo "lto = true" >> Cargo.toml
 
-    - name: Archive binary
-      uses: actions/upload-artifact@v1
-      with:
-        name: bandcamp_downloader-x86_64-unknown-linux-gnu
-        path: linux_bin/
+      - name: Build binary
+        run: cargo build --verbose --release
+
+      - name: Create release dir
+        run: |
+          mkdir linux_bin
+          cp -r intl linux_bin/
+          cp target/release/bandcamp_downloader linux_bin/
+
+      - name: Archive binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: bandcamp_downloader-x86_64-unknown-linux-gnu
+          path: linux_bin/
 
     # TODO deb build that includes resources
     # - name: Pack bandcamp_downloader .deb package
@@ -48,61 +52,67 @@ jobs:
   bandcamp_downloader_windows:
     runs-on: windows-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-    - uses: actions/checkout@master
+      - name: Setup Rust
+        uses: hecrj/setup-rust-action@v1
 
-    - name: Enable Link Time Optimizations
-      run: |
-        echo "[profile.release]" >> Cargo.toml
-        echo "lto = true" >> Cargo.toml
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Enable static CRT linkage
-      run: |
-        mkdir .cargo
-        echo '[target.x86_64-pc-windows-msvc]' >> .cargo/config
-        echo 'rustflags = ["-Ctarget-feature=+crt-static"]' >> .cargo/config
+      - name: Enable Link Time Optimizations
+        run: |
+          echo "[profile.release]" >> Cargo.toml
+          echo "lto = true" >> Cargo.toml
 
-    - name: Build bandcamp_downloader binary
-      run: cargo build --verbose --release
+      - name: Enable static CRT linkage
+        run: |
+          mkdir .cargo
+          echo '[target.x86_64-pc-windows-msvc]' >> .cargo/config
+          echo 'rustflags = ["-Ctarget-feature=+crt-static"]' >> .cargo/config
 
-    - name: Create release dir
-      run: |
-        mkdir release_bin
-        cp -r intl release_bin/
-        cp target/release/bandcamp_downloader.exe release_bin/
-    # TODO include any other windows deps
+      - name: Build bandcamp_downloader binary
+        run: cargo build --verbose --release
 
-    - name: Archive binary
-      uses: actions/upload-artifact@v1
-      with:
-        name: bandcamp_downloader-x86_64-pc-windows-msvc
-        path: release_bin/
+      - name: Create release dir
+        run: |
+          mkdir release_bin
+          cp -r intl release_bin/
+          cp target/release/bandcamp_downloader.exe release_bin/
+      # TODO include any other windows deps
+
+      - name: Archive binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: bandcamp_downloader-x86_64-pc-windows-msvc
+          path: release_bin/
 
   # UNTESTED
   bandcamp_downloader_macos:
     runs-on: macOS-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-    - uses: actions/checkout@master
+      - name: Setup Rust
+        uses: hecrj/setup-rust-action@v1
 
-    - name: Enable Link Time Optimizations
-      run: |
-        echo "[profile.release]" >> Cargo.toml
-        echo "lto = true" >> Cargo.toml
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Build bandcamp_downloader binary
-      env:
-        MACOSX_DEPLOYMENT_TARGET: 10.14
-      run: cargo build --verbose --release
+      - name: Enable Link Time Optimizations
+        run: |
+          echo "[profile.release]" >> Cargo.toml
+          echo "lto = true" >> Cargo.toml
 
-    - name: Create release dir
-      run: |
-        mkdir release_bin
-        cp -r intl release_bin/
-        cp target/release/bandcamp_downloader release_bin/
+      - name: Build bandcamp_downloader binary
+        env:
+          MACOSX_DEPLOYMENT_TARGET: 10.14
+        run: cargo build --verbose --release
 
-    - name: Archive binary
-      uses: actions/upload-artifact@v1
-      with:
-        name: bandcamp_downloader-x86_64-apple-darwin
-        path: release_bin/
+      - name: Create release dir
+        run: |
+          mkdir release_bin
+          cp -r intl release_bin/
+          cp target/release/bandcamp_downloader release_bin/
+
+      - name: Archive binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: bandcamp_downloader-x86_64-apple-darwin
+          path: release_bin/
