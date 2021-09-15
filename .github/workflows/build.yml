@@ -126,6 +126,7 @@ jobs:
           name: bandcamp_downloader-x86_64-apple-darwin
           path: release_bin/
 
+  # see https://github.com/marketplace/actions/create-release
   create_release:
     needs:
       - bandcamp_downloader_linux
