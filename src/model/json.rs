@@ -45,10 +45,10 @@ impl JsonTrack {
     pub fn into_track(self, album: &Album) -> Option<Track> {
         let mp3_url = self.file.map(|file| {
             if file.url.starts_with("//") {
-                format!("http:{}", file.url)
-            } else {
-                file.url
+                return format!("http:{}", file.url);
             }
+
+            file.url
         })?;
         // For bandcamp track pages, Number will be 0. Set 1 instead
         let number = self.number.or(Some(1));
