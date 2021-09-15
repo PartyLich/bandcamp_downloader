@@ -119,6 +119,7 @@ jobs:
           mkdir release_bin
           cp -r intl release_bin/
           cp target/release/bandcamp_downloader release_bin/
+          chmod +x release_bin/bandcamp_downloader
 
       - name: Archive binary
         uses: actions/upload-artifact@v1
