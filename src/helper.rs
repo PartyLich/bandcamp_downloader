@@ -142,6 +142,8 @@ mod test {
     use crate::model::Track;
     use chrono::{TimeZone, Utc};
 
+    mod strings;
+
     #[test]
     fn fixes_json() {
         let raw = r#"url: "http://verbalclick.bandcamp.com" + "/album/404","#;
@@ -154,63 +156,13 @@ mod test {
 
     #[test]
     fn gets_album_data() {
-        let raw_html = r#" var TralbumData = {
-            foo: "bar"
-        };
-
-        var baz = {
-            wombo: "combo"
-        };"#;
-
-        let expected = r#"{
-            "foo": "bar"
-        }"#;
-        let actual = get_album_data(&raw_html).unwrap();
+        let expected = strings::TRALBUM_DATA;
+        let actual = get_album_data(strings::TRALBUM_HTML).unwrap();
         assert_eq!(actual, expected);
     }
 
     #[tokio::test]
     async fn gets_album() {
-        let raw_html = r#"var TralbumData = {
-    // For the curious:
-    // http://bandcamp.com/help/audio_basics#steal
-    // http://bandcamp.com/terms_of_use
-    current: {"isrc":null,"file_name":null,"title":"Final Lap","album_id":null,"about":null,"encodings_id":1928142095,"auto_repriced":null,"minimum_price":1.0,"lyrics":null,"credits":null,"set_price":1.0,"publish_date":"24 Apr 2020 10:46:44 GMT","release_date":"24 Apr 2020 00:00:00 GMT","download_desc_id":null,"minimum_price_nonzero":1.0,"audit":0,"streaming":1,"preorder_download":null,"track_number":null,"private":null,"new_desc_format":1,"mod_date":"24 Apr 2020 10:46:44 GMT","id":350943074,"license_type":1,"art_id":2129006133,"is_set_price":null,"killed":null,"band_id":1173700968,"artist":null,"require_email":null,"new_date":"24 Apr 2020 10:46:40 GMT","type":"track","pending_encodings_id":null,"selling_band_id":1173700968,"require_email_0":null,"download_pref":2},
-    hasAudio: true,
-    album_is_preorder: null,
-    album_release_date: null,
-    art_id: 2129006133,
-    trackinfo: [{"play_count":0,"is_draft":false,"free_album_download":false,"title":"Final Lap","video_caption":null,"title_link":"/track/final-lap","track_id":350943074,"is_capped":false,"sizeof_lyrics":0,"encodings_id":1928142095,"video_featured":null,"lyrics":null,"duration":311.327,"has_lyrics":false,"video_source_type":null,"alt_link":null,"streaming":1,"has_info":false,"private":null,"track_license_id":null,"video_source_id":null,"track_num":null,"encoding_error":null,"video_id":null,"is_downloadable":true,"license_type":1,"id":350943074,"video_mobile_url":null,"album_preorder":false,"encoding_pending":null,"has_free_download":null,"file":{"mp3-128":"https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"},"video_poster_url":null,"unreleased_track":false}, {"track_license_id":null,"encoding_error":null,"is_downloadable":true,"license_type":1,"file":{"mp3-128":"https://t4.bcbits.com/stream/db1af2e5f68f45ba5647560e4e81b2ad/mp3-128/120295245?p=0&ts=1595393447&t=645c963dc20bd86ef5b86c569fde8e01b02c5834&token=1595393447_8d168bda6e5bee441f98d072e6ca39a0f647c369"},"video_mobile_url":null,"album_preorder":false,"encoding_pending":null,"has_free_download":null,"video_poster_url":null,"unreleased_track":false,"track_id":120295245,"play_count":null,"is_draft":false,"free_album_download":false,"encodings_id":4242834731,"title":"Glancing Blows // Nights","video_caption":null,"duration":345.882,"title_link":"/track/glancing-blows-nights","is_capped":null,"sizeof_lyrics":0,"video_featured":null,"lyrics":null,"streaming":1,"has_lyrics":false,"private":null,"video_id":null,"video_source_type":null,"alt_link":null,"has_info":false,"id":120295245,"video_source_id":null,"track_num":6}],
-    playing_from: "track page",
-    packages: null,
-    album_url: null,
-    url: "http://theracers.bandcamp.com/track/final-lap",
-    defaultPrice: 1.0,
-    freeDownloadPage: null,
-    FREE: 1,
-    PAID: 2,
-    artist: "The Racers",
-    item_type: "track", // xxx: note - don't internationalize this variable
-    id: 350943074,
-    last_subscription_item: null,
-    has_discounts: null,
-    is_bonus: null,
-    play_cap_data: {"streaming_limits_enabled":true,"streaming_limit":3},
-    client_id_sig: "J+6CqXlrQNrrHlOU00LqGujGx/I=",
-    is_purchased: null,
-    items_purchased: null,
-    is_private_stream: null,
-    is_band_member: null,
-    licensed_version_ids: null,
-    package_associated_license_id: null
-};
-
-var PaymentData = {
-    paymentType: null,
-    paymentDownloadPage: null
-};
-"#;
-
         let msg = "builds Album object from html";
         let expected = Album {
             artist: String::from("The Racers"),
@@ -228,159 +180,20 @@ var PaymentData = {
             tracks: vec![Track {
                 duration: 311.327,
                 lyrics: None,
-                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1593190558&t=8419ee8e51afb4b6ff82c17a6ada652759a67e61&token=1593190558_506542a3276203145b01723422d77b84d02fe0b2"),
+                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&amp;ts=1631806573&amp;t=1c02736b48124fcde7acb2743812134a3e4b25de&amp;token=1631806573_49c0e23c8c2b500fcf206501d703e81527972f5b"),
                 number: 1,
                 path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
                 title: String::from("Final Lap")
             },
-            Track {
-                duration: 345.882,
-                lyrics: None,
-                mp3_url: String::from("https://t4.bcbits.com/stream/db1af2e5f68f45ba5647560e4e81b2ad/mp3-128/120295245?p=0&ts=1595393447&t=645c963dc20bd86ef5b86c569fde8e01b02c5834&token=1595393447_8d168bda6e5bee441f98d072e6ca39a0f647c369"),
-                number: 6,
-                path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/06 - Glancing Blows __ Nights.mp3"),
-                title: String::from("Glancing Blows // Nights")
-            }],
+            ],
         };
         let save_dir = "/home/partylich/music/test/{artist}/{year} - {album}";
-        let actual = get_album(&raw_html, save_dir).unwrap();
+        let actual = get_album(strings::TRALBUM_HTML, save_dir).unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 
     #[test]
     fn gets_albums_url() {
-        let raw_html = r#"
-        <div class="desktop-header">
-            <a href="https://moter.bandcamp.com" referrerpolicy="strict-origin-when-cross-origin"><img src="https://f4.bcbits.com/img/0024058603_100.png" width="975" height="180"></a>
-
-        </div>
-
-<ol id="music-grid" data-edit-callback="/music_reorder" class="
-        editable-grid music-grid columns-3
-
-
-        public
-    ">
-
-
-            <li data-item-id="album-1761080842" data-band-id="992143159" class="music-grid-item square first-four
-
-    " data-bind="css: {'featured': featured()}">
-    <a href="/album/aerodnmx">
-
-        <div class="art">
-
-
-                <img src="https://f4.bcbits.com/img/a1224476602_2.jpg" alt="">
-
-
-
-
-        </div>
-
-        <p class="title">
-            Aerodnmx
-
-        </p>
-
-    </a>
-</li>
-
-            <li data-item-id="album-3329240663" data-band-id="992143159" class="music-grid-item square first-four
-
-    " data-bind="css: {'featured': featured()}">
-    <a href="/album/last-train-to-synthville">
-
-        <div class="art">
-
-
-                <img src="https://f4.bcbits.com/img/a3661726480_2.jpg" alt="">
-
-
-
-
-        </div>
-
-        <p class="title">
-            Last Train To Synthville
-
-        </p>
-
-    </a>
-</li>
-
-            <li data-item-id="album-3085007057" data-band-id="992143159" class="music-grid-item square first-four
-
-    " data-bind="css: {'featured': featured()}">
-    <a href="/album/wave-transmission">
-
-        <div class="art">
-
-
-                <img src="https://f4.bcbits.com/img/a1375292380_2.jpg" alt="">
-
-
-
-
-        </div>
-
-        <p class="title">
-            Wave Transmission
-
-        </p>
-
-    </a>
-</li>
-
-            <li data-item-id="album-2214411790" data-band-id="992143159" class="music-grid-item square first-four
-
-    " data-bind="css: {'featured': featured()}">
-    <a href="/album/omegadriver">
-
-        <div class="art">
-
-
-                <img src="https://f4.bcbits.com/img/a1802906128_2.jpg" alt="">
-
-
-
-
-        </div>
-
-        <p class="title">
-            Omegadriver
-
-        </p>
-
-    </a>
-</li>
-
-            <li data-item-id="album-3563048759" data-band-id="992143159" class="music-grid-item square
-
-    " data-bind="css: {'featured': featured()}">
-    <a href="/album/moter-ep">
-
-        <div class="art">
-
-
-                <img src="https://f4.bcbits.com/img/a3170427267_2.jpg" alt="">
-
-
-
-
-        </div>
-
-        <p class="title">
-            MoTER (Ep)
-
-        </p>
-
-    </a>
-</li>
-
-
-</ol>
-        "#;
         let mut expected = vec![
             "https://moter.bandcamp.com/album/moter-ep",
             "https://moter.bandcamp.com/album/last-train-to-synthville",
@@ -388,7 +201,7 @@ var PaymentData = {
             "https://moter.bandcamp.com/album/omegadriver",
             "https://moter.bandcamp.com/album/aerodnmx",
         ];
-        let mut actual = get_albums_url(raw_html).unwrap();
+        let mut actual = get_albums_url(strings::ALBUM_HTML).unwrap();
         actual.sort();
         expected.sort();
         assert_eq!(actual, expected);
