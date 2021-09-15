@@ -1,4 +1,4 @@
-name: Build
+name: Build + Release
 on:
   push:
     branches:
@@ -119,3 +119,18 @@ jobs:
         with:
           name: bandcamp_downloader-x86_64-apple-darwin
           path: release_bin/
+
+  create_release:
+    needs:
+      - bandcamp_downloader_linux
+      - bandcamp_downloader_macos
+      - bandcamp_downloader_windows
+    runs-on: ubuntu-latest
+    steps:
+    # - uses: actions/checkout@v2
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "bandcamp_downloader-*"
+        # bodyFile: "body.md"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
