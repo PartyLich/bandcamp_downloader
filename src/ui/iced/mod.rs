@@ -32,6 +32,7 @@ pub enum Message {
     Domain(ui::Message),
     UrlsChanged(String),
     SaveDirChanged(String),
+    FilenameFormatChanged(String),
     DiscographyToggled(bool),
     ModifyTagsToggled(bool),
     OpenSettings,

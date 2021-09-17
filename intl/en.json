@@ -10,5 +10,6 @@
   "cancel_button_text": "Cancel",
   "save_input_placeholder": "Enter enter a directory with placeholders",
   "urls_placeholder": "Enter a BandCamp url, press return to add",
-  "delete_button":"Delete"
+  "delete_button":"Delete",
+  "filename_format": "Filename format"
 }

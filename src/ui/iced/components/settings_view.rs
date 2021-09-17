@@ -1,4 +1,4 @@
-use iced::{Column, Container, Element, Length, Row, Space};
+use iced::{text_input, Column, Container, Element, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
@@ -8,11 +8,15 @@ use crate::ui::{
 
 /// Settings view UI state
 #[derive(Debug, Default)]
-pub struct State {}
+pub struct State {
+    pub filename_input: text_input::State,
+}
 
 impl State {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            filename_input: text_input::State::new(),
+        }
     }
 }
 
@@ -21,6 +25,8 @@ pub fn view<'a>(
     settings: &UserSettings,
     intl: &'a IntlString,
 ) -> Element<'a, Message> {
+    let filename_format =
+        components::filename_format(&mut state.filename_input, &settings.file_name_format, intl);
     let modify_tags_checkbox = components::checkbox_row(
         settings.modify_tags,
         &intl.modify_tags_checkbox,
@@ -32,6 +38,7 @@ pub fn view<'a>(
         .spacing(5)
         .height(Length::Fill)
         .width(Length::FillPortion(2))
+        .push(filename_format)
         .push(modify_tags_checkbox)
         .push(Space::with_height(Length::Fill))
         .push(controls);

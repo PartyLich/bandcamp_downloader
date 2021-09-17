@@ -143,6 +143,10 @@ impl Application for App {
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.downloads_path = value.into();
             }
+            Message::FilenameFormatChanged(value) => {
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.file_name_format = value;
+            }
             Message::DiscographyToggled(value) => {
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.download_artist_discography = value;
