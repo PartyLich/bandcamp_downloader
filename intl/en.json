@@ -3,6 +3,7 @@
   "settings_title": "Bandcamp Downloader: Settings",
   "save_caption": "Save albums to",
   "discography_checkbox": "Download artist discography",
+  "modify_tags_checkbox": "Modify track tags (id3)",
   "log_placeholder": "Ready to rock",
   "download_button_text": "Download",
   "settings_button_text": "Settings",

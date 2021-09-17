@@ -147,6 +147,10 @@ impl Application for App {
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.download_artist_discography = value;
             }
+            Message::ModifyTagsToggled(value) => {
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.modify_tags = value;
+            }
             Message::AddUrl => {
                 if self.ui_state.main.url_state.input_value.is_empty() {
                     return Command::none();

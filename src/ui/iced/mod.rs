@@ -33,6 +33,7 @@ pub enum Message {
     UrlsChanged(String),
     SaveDirChanged(String),
     DiscographyToggled(bool),
+    ModifyTagsToggled(bool),
     OpenSettings,
     AddUrl,
     ClearUrls,

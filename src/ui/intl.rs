@@ -17,6 +17,7 @@ pub struct IntlString {
     pub save_input_placeholder: String,
     pub urls_placeholder: String,
     pub delete_button: String,
+    pub modify_tags_checkbox: String,
 }
 
 impl IntlString {
