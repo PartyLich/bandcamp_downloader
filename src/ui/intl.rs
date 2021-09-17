@@ -13,6 +13,7 @@ pub struct IntlString {
     pub log_placeholder: String,
     pub download_button_text: String,
     pub settings_button_text: String,
+    pub main_button_text: String,
     pub cancel_button_text: String,
     pub save_input_placeholder: String,
     pub urls_placeholder: String,

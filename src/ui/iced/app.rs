@@ -178,6 +178,9 @@ impl Application for App {
             Message::OpenSettings => {
                 self.cur_view = View::Settings;
             }
+            Message::OpenMain => {
+                self.cur_view = View::Main;
+            }
             Message::Domain(ui::Message::StartDownloads) => {
                 log_info(
                     self.sender.clone(),

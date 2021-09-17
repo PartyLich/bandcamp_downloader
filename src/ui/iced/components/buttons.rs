@@ -26,6 +26,10 @@ pub fn settings<'a>(state: &'a mut button::State, intl: &IntlString) -> Button<'
     button(state, &intl.settings_button_text).on_press(Message::OpenSettings)
 }
 
+pub fn cancel_settings<'a>(state: &'a mut button::State, intl: &IntlString) -> Button<'a, Message> {
+    button(state, &intl.main_button_text).on_press(Message::OpenMain)
+}
+
 pub fn cancel<'a>(state: &'a mut button::State, intl: &IntlString) -> Button<'a, Message> {
     button(state, &intl.cancel_button_text).on_press(Message::Domain(ui::Message::CancelDownloads))
 }

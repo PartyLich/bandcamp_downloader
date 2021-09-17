@@ -1,20 +1,25 @@
-use iced::{text_input, Column, Container, Element, Length, Row, Space};
+use iced::{button, text_input, Column, Container, Element, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
-    iced::{components, Message},
+    iced::{
+        components::{self, buttons},
+        Message,
+    },
     IntlString,
 };
 
 /// Settings view UI state
 #[derive(Debug, Default)]
 pub struct State {
+    pub cancel: button::State,
     pub filename_input: text_input::State,
 }
 
 impl State {
     pub fn new() -> Self {
         Self {
+            cancel: button::State::new(),
             filename_input: text_input::State::new(),
         }
     }
@@ -32,7 +37,9 @@ pub fn view<'a>(
         &intl.modify_tags_checkbox,
         Message::ModifyTagsToggled,
     );
-    let controls = Row::new().push(Space::with_width(Length::Fill));
+    let controls = Row::new()
+        .push(Space::with_width(Length::Fill))
+        .push(buttons::cancel_settings(&mut state.cancel, intl));
 
     let settings = Column::new()
         .spacing(5)
