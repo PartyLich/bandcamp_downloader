@@ -10,6 +10,9 @@ use crate::{
     Result, ALBUM_RE, BAND_RE, HTML_QUOTE_RE,
 };
 
+mod file_helper;
+pub use file_helper::*;
+
 fn log_channel<T: ToString>(mut sender: mpsc::Sender<Message>, level: LogLevel, msg: T) {
     sender
         .try_send(Message::Log(msg.to_string(), level))

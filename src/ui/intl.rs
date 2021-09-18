@@ -1,22 +1,7 @@
 use serde::Deserialize;
-use std::{fs, path::PathBuf};
+use std::fs;
 
-use crate::settings::Language;
-
-#[cfg(debug_assertions)]
-fn get_root_dir() -> PathBuf {
-    env!("CARGO_MANIFEST_DIR").into()
-}
-
-#[cfg(not(debug_assertions))]
-fn get_root_dir() -> PathBuf {
-    if let Ok(mut exe_path) = std::env::current_exe() {
-        exe_path.pop();
-        exe_path
-    } else {
-        PathBuf::new()
-    }
-}
+use crate::{helper::get_root_dir, settings::Language};
 
 /// Display strings used in the user interface
 #[derive(Debug, Deserialize)]
