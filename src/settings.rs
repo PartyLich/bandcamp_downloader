@@ -1,4 +1,8 @@
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
+
+use serde::{Deserialize, Serialize};
+
+use crate::{helper, Result};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Language {
@@ -6,7 +10,7 @@ pub enum Language {
 }
 
 /// Available playlist export formats
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Deserialize, Copy, Clone, Serialize)]
 pub enum PlaylistFormat {
     /// MP3 url format
     M3U,
@@ -46,7 +50,7 @@ impl std::fmt::Display for PlaylistFormat {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct UserSettings {
     pub allowed_file_size_difference: f32,
 
@@ -117,5 +121,28 @@ impl Default for UserSettings {
 
             show_verbose_log: false,
         }
+    }
+}
+
+impl UserSettings {
+    const SETTINGS_FILE: &'static str = "user_settings.json";
+
+    /// Attempt to load user settings from the filesystem
+    pub fn load() -> Result<UserSettings> {
+        let mut path = helper::get_root_dir();
+        path.push(Self::SETTINGS_FILE);
+
+        let settings = fs::read_to_string(&path)?;
+        serde_json::from_str(&settings).map_err(From::from)
+    }
+
+    /// Attempt to save user settings to the filesystem
+    pub fn save(&self) -> Result<()> {
+        let mut path = helper::get_root_dir();
+        path.push(Self::SETTINGS_FILE);
+
+        let settings = serde_json::to_string_pretty(self)?;
+        // create or overwrite settings file
+        fs::write(path, settings).map_err(From::from)
     }
 }

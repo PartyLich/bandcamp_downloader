@@ -18,6 +18,6 @@ fn select_ui() -> Box<dyn Ui> {
 fn main() {
     let ui = select_ui();
 
-    let user_settings = UserSettings::default();
+    let user_settings = UserSettings::load().unwrap_or_default();
     ui.run(user_settings);
 }
