@@ -29,6 +29,7 @@ impl DownloadService {
             &urls,
             settings.download_artist_discography,
             &settings.downloads_path.to_string_lossy(),
+            &settings.file_name_format,
         )
         .await;
 

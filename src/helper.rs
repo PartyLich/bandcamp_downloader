@@ -63,7 +63,7 @@ fn fix_json(album_data: &str) -> String {
 
 /// Retrieves the data on the album of the specified Bandcamp page.  Takes the HTML source code of
 /// a Bandcamp album page and returns the data on the album of the specified Bandcamp page.
-pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
+pub fn get_album(raw_html: &str, folder_path: &str, filename_format: &str) -> Result<Album> {
     // Keep the necessary part of the html only
     // it's a js object literal, which isnt JSON, so we need to adjust it to match the actual
     // spec prior to deserialization
@@ -71,7 +71,8 @@ pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
     let album_data = get_album_data(&album_data)?;
     // Deserialize JSON
     // TODO serializer interface
-    let album = serde_json::from_str::<JsonAlbum>(&album_data)?.into_album(folder_path);
+    let album =
+        serde_json::from_str::<JsonAlbum>(&album_data)?.into_album(folder_path, filename_format);
 
     // TODO lyrics
     // Extract lyrics from album page
@@ -180,7 +181,8 @@ mod test {
             ],
         };
         let save_dir = "/home/partylich/music/test/{artist}/{year} - {album}";
-        let actual = get_album(strings::TRALBUM_HTML, save_dir).unwrap();
+        let filename_format = "{tracknum} - {title}.mp3";
+        let actual = get_album(strings::TRALBUM_HTML, save_dir, filename_format).unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 
