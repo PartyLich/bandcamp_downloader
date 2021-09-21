@@ -1,13 +1,12 @@
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use futures::channel::mpsc;
 use iced::{Application, Command, Element, Settings, Subscription};
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::Mutex;
 
 use super::{
     components::{main_view, Entry, EntryMessage},
-    subscription, Message, SettingType,
+    subscription, Message,
 };
 use crate::{
     core::DownloadService,
@@ -26,7 +25,8 @@ type SharedReceiver<T> = Arc<Mutex<mpsc::Receiver<T>>>;
 
 #[derive(Debug)]
 pub struct App {
-    user_settings: Arc<RwLock<UserSettings>>,
+    user_settings: Arc<std::sync::Mutex<UserSettings>>,
+
     download_service: Arc<DownloadService>,
     ui_state: main_view::State,
 
@@ -44,8 +44,9 @@ impl App {
             save_dir: user_settings.downloads_path.to_string_lossy().to_string(),
             ..main_view::State::default()
         };
-        let user_settings = Arc::new(RwLock::new(user_settings));
-        let download_service = DownloadService::new(Arc::clone(&user_settings));
+
+        let user_settings = Arc::new(std::sync::Mutex::new(user_settings));
+        let download_service = DownloadService::new();
 
         Self {
             user_settings,
@@ -114,26 +115,14 @@ impl Application for App {
             Message::SaveDirChanged(value) => {
                 self.ui_state.save_dir = value.clone();
 
-                let settings = self.user_settings.clone();
-                return Command::perform(
-                    async move {
-                        let mut settings = settings.write().await;
-                        settings.downloads_path = PathBuf::from(value);
-                    },
-                    |_| Message::SettingsChanged(SettingType::Other),
-                );
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.downloads_path = value.into();
             }
             Message::DiscographyToggled(value) => {
                 self.ui_state.download_discography = value;
 
-                let settings = self.user_settings.clone();
-                return Command::perform(
-                    async move {
-                        let mut settings = settings.write().await;
-                        settings.download_artist_discography = value;
-                    },
-                    |_| Message::SettingsChanged(SettingType::Other),
-                );
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.download_artist_discography = value;
             }
             Message::AddUrl => {
                 if !self.ui_state.url_state.input_value.is_empty() {
@@ -161,9 +150,14 @@ impl Application for App {
                     format!("Start download\n{}", self.urls()),
                 );
                 self.ui_state.downloading_files.clear();
+
+                let settings = self.user_settings.lock().unwrap().clone();
                 return Command::perform(
-                    Arc::clone(&self.download_service)
-                        .start_downloads(self.urls(), self.sender.clone()),
+                    Arc::clone(&self.download_service).start_downloads(
+                        self.urls(),
+                        self.sender.clone(),
+                        settings,
+                    ),
                     Message::DownloadsComplete,
                 );
             }

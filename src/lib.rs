@@ -5,7 +5,7 @@ use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
-use tokio::{fs, io::AsyncWriteExt, sync::RwLock};
+use tokio::{fs, io::AsyncWriteExt};
 
 use error::Error;
 use model::{Album, Track};
@@ -246,6 +246,7 @@ async fn download_track_stream(
                 LogLevel::Info,
             ))
             .expect("Failed to send message");
+        // TODO: redownload if size exceeds allowed difference
         return Err(Error::Io(String::from("File already exists")));
     }
 
@@ -431,11 +432,7 @@ async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
 }
 
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(
-    album: Album,
-    sender: mpsc::Sender<Message>,
-    settings: Arc<RwLock<UserSettings>>,
-) {
+async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: Arc<UserSettings>) {
     let UserSettings {
         allowed_file_size_difference,
         save_cover_art_in_folder,
@@ -443,7 +440,7 @@ async fn download_album(
         modify_tags,
         download_max_tries,
         ..
-    } = *settings.read().await;
+    } = *settings;
 
     // TODO cancellation
 
