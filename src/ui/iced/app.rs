@@ -23,12 +23,37 @@ pub struct AppFlags {
 
 type SharedReceiver<T> = Arc<Mutex<mpsc::Receiver<T>>>;
 
+/// UI state for each view
+#[derive(Debug)]
+pub struct UiState {
+    main: main_view::State,
+}
+
+/// Renderable views
+#[derive(Debug)]
+enum View {
+    Main,
+}
+
+impl View {
+    /// Returns the localized window title for this view
+    fn title(&self, intl: &ui::IntlString) -> String {
+        // todo: anything that doesnt require these explicit lines for every view
+        // a trait or something?
+        match self {
+            Self::Main => intl.title.clone(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct App {
     user_settings: Arc<std::sync::Mutex<UserSettings>>,
-
     download_service: Arc<DownloadService>,
-    ui_state: main_view::State,
+    intl: Arc<ui::IntlString>,
+
+    ui_state: UiState,
+    cur_view: View,
 
     sender: mpsc::Sender<ui::Message>,
     receiver: SharedReceiver<ui::Message>,
@@ -39,19 +64,22 @@ impl App {
     pub fn new(flags: AppFlags) -> Self {
         let AppFlags { user_settings } = flags;
         let (sender, receiver) = mpsc::channel(50);
-        let ui_state = main_view::State {
-            download_discography: user_settings.download_artist_discography,
-            save_dir: user_settings.downloads_path.to_string_lossy().to_string(),
-            ..main_view::State::default()
-        };
 
+        let intl = Arc::new(ui::IntlString::default());
         let user_settings = Arc::new(std::sync::Mutex::new(user_settings));
         let download_service = DownloadService::new();
+        let ui_state = UiState {
+            main: main_view::State::default(),
+        };
 
         Self {
             user_settings,
             download_service: Arc::new(download_service),
+            intl,
+
             ui_state,
+            cur_view: View::Main,
+
             sender,
             receiver: Arc::new(Mutex::new(receiver)),
         }
@@ -75,21 +103,16 @@ impl App {
         }
     }
 
-    #[inline]
-    pub fn title(&self) -> &str {
-        &self.ui_state.intl.title
-    }
-
     fn set_url_input(&mut self, value: String) {
-        self.ui_state.url_state.input_value = value;
+        self.ui_state.main.url_state.input_value = value;
     }
 
     fn clear_urls(&mut self) {
-        self.ui_state.url_state.url_list.clear();
+        self.ui_state.main.url_state.url_list.clear();
     }
 
     fn urls(&self) -> String {
-        self.ui_state.url_state.to_string()
+        self.ui_state.main.url_state.to_string()
     }
 }
 
@@ -104,7 +127,7 @@ impl Application for App {
     }
 
     fn title(&self) -> String {
-        self.ui_state.title()
+        self.cur_view.title(&self.intl)
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -113,32 +136,35 @@ impl Application for App {
                 self.set_url_input(value);
             }
             Message::SaveDirChanged(value) => {
-                self.ui_state.save_dir = value.clone();
+                self.ui_state.main.save_dir = value.clone();
 
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.downloads_path = value.into();
             }
             Message::DiscographyToggled(value) => {
-                self.ui_state.download_discography = value;
+                self.ui_state.main.download_discography = value;
 
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.download_artist_discography = value;
             }
             Message::AddUrl => {
-                if !self.ui_state.url_state.input_value.is_empty() {
-                    self.ui_state
-                        .url_state
-                        .url_list
-                        .push(Entry::new(self.ui_state.url_state.input_value.clone()));
-                    self.ui_state.url_state.input_value.clear();
+                if self.ui_state.main.url_state.input_value.is_empty() {
+                    return Command::none();
                 }
+
+                self.ui_state
+                    .main
+                    .url_state
+                    .url_list
+                    .push(Entry::new(self.ui_state.main.url_state.input_value.clone()));
+                self.ui_state.main.url_state.input_value.clear();
             }
             Message::ClearUrls => {
                 self.clear_urls();
             }
             Message::Url(i, entry_message) => match entry_message {
                 EntryMessage::Delete => {
-                    self.ui_state.url_state.url_list.remove(i);
+                    self.ui_state.main.url_state.url_list.remove(i);
                 }
             },
             Message::OpenSettings => {
@@ -149,7 +175,7 @@ impl Application for App {
                     self.sender.clone(),
                     format!("Start download\n{}", self.urls()),
                 );
-                self.ui_state.downloading_files.clear();
+                self.ui_state.main.downloading_files.clear();
 
                 let settings = self.user_settings.lock().unwrap().clone();
                 return Command::perform(
@@ -166,10 +192,10 @@ impl Application for App {
             }
             Message::Domain(ui::Message::Log(value, level)) => {
                 println!("{}", value);
-                self.ui_state.add_log(&value, level);
+                self.ui_state.main.add_log(&value, level);
             }
             Message::Domain(ui::Message::Progress(dl_progress)) => {
-                self.ui_state.downloading_files.replace(dl_progress);
+                self.ui_state.main.downloading_files.replace(dl_progress);
             }
             Message::DownloadsComplete(_) => {
                 log_info(self.sender.clone(), "All downloads complete");
@@ -181,7 +207,9 @@ impl Application for App {
     }
 
     fn view(&mut self) -> Element<Message> {
-        main_view::view(&mut self.ui_state)
+        match self.cur_view {
+            View::Main => main_view::view(&mut self.ui_state.main),
+        }
     }
 
     fn subscription(&self) -> Subscription<Message> {
