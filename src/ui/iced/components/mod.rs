@@ -20,6 +20,7 @@ mod controls;
 mod entry;
 mod event_log;
 pub mod main_view;
+pub mod settings_view;
 mod styled_text_input;
 mod url_section;
 

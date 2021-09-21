@@ -1,5 +1,6 @@
 {
   "title": "Bandcamp Downloader",
+  "settings_title": "Bandcamp Downloader: Settings",
   "save_caption": "Save albums to",
   "discography_checkbox": "Download artist discography",
   "log_placeholder": "Ready to rock",

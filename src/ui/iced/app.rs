@@ -5,7 +5,7 @@ use iced::{Application, Command, Element, Settings, Subscription};
 use tokio::sync::Mutex;
 
 use super::{
-    components::{main_view, Entry, EntryMessage},
+    components::{main_view, settings_view, Entry, EntryMessage},
     subscription, Message,
 };
 use crate::{
@@ -27,12 +27,14 @@ type SharedReceiver<T> = Arc<Mutex<mpsc::Receiver<T>>>;
 #[derive(Debug)]
 pub struct UiState {
     main: main_view::State,
+    settings: settings_view::State,
 }
 
 /// Renderable views
 #[derive(Debug)]
 enum View {
     Main,
+    Settings,
 }
 
 impl View {
@@ -42,6 +44,7 @@ impl View {
         // a trait or something?
         match self {
             Self::Main => intl.title.clone(),
+            Self::Settings => intl.settings_title.clone(),
         }
     }
 }
@@ -69,7 +72,8 @@ impl App {
         let user_settings = Arc::new(std::sync::Mutex::new(user_settings));
         let download_service = DownloadService::new();
         let ui_state = UiState {
-            main: main_view::State::default(),
+            main: main_view::State::new(),
+            settings: settings_view::State::new(),
         };
 
         Self {
@@ -164,7 +168,7 @@ impl Application for App {
                 }
             },
             Message::OpenSettings => {
-                println!("open settings");
+                self.cur_view = View::Settings;
             }
             Message::Domain(ui::Message::StartDownloads) => {
                 log_info(
@@ -206,6 +210,9 @@ impl Application for App {
         let settings = self.user_settings.lock().unwrap();
         match self.cur_view {
             View::Main => main_view::view(&mut self.ui_state.main, &settings, &self.intl),
+            View::Settings => {
+                settings_view::view(&mut self.ui_state.settings, &settings, &self.intl)
+            }
         }
     }
 

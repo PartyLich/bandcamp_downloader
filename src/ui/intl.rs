@@ -7,6 +7,7 @@ use crate::{helper::get_root_dir, settings::Language};
 #[derive(Debug, Deserialize)]
 pub struct IntlString {
     pub title: String,
+    pub settings_title: String,
     pub save_caption: String,
     pub discography_checkbox: String,
     pub log_placeholder: String,
