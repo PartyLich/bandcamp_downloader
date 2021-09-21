@@ -136,14 +136,10 @@ impl Application for App {
                 self.set_url_input(value);
             }
             Message::SaveDirChanged(value) => {
-                self.ui_state.main.save_dir = value.clone();
-
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.downloads_path = value.into();
             }
             Message::DiscographyToggled(value) => {
-                self.ui_state.main.download_discography = value;
-
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.download_artist_discography = value;
             }
@@ -207,8 +203,9 @@ impl Application for App {
     }
 
     fn view(&mut self) -> Element<Message> {
+        let settings = self.user_settings.lock().unwrap();
         match self.cur_view {
-            View::Main => main_view::view(&mut self.ui_state.main),
+            View::Main => main_view::view(&mut self.ui_state.main, &settings, &self.intl),
         }
     }
 
