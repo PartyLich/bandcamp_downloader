@@ -35,6 +35,7 @@ pub enum Message {
     FilenameFormatChanged(String),
     DiscographyToggled(bool),
     ModifyTagsToggled(bool),
+    ArtInFolderToggled(bool),
     OpenSettings,
     OpenMain,
     AddUrl,

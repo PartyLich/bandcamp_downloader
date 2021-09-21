@@ -4,6 +4,7 @@
   "save_caption": "Save albums to",
   "discography_checkbox": "Download artist discography",
   "modify_tags_checkbox": "Modify track tags (id3)",
+  "art_in_folder": "Save album artwork in folder",
   "log_placeholder": "Ready to rock",
   "download_button_text": "Download",
   "settings_button_text": "Settings",

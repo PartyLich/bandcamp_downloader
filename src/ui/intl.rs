@@ -21,6 +21,7 @@ pub struct IntlString {
     pub delete_button: String,
     pub filename_format: String,
     pub modify_tags_checkbox: String,
+    pub art_in_folder: String,
 }
 
 impl IntlString {

@@ -151,6 +151,10 @@ impl Application for App {
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.download_artist_discography = value;
             }
+            Message::ArtInFolderToggled(value) => {
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.save_cover_art_in_folder = value;
+            }
             Message::ModifyTagsToggled(value) => {
                 let mut user_settings = self.user_settings.lock().unwrap();
                 user_settings.modify_tags = value;
