@@ -14,6 +14,7 @@ pub struct IntlString {
     pub download_button_text: String,
     pub settings_button_text: String,
     pub main_button_text: String,
+    pub save_settings_button: String,
     pub cancel_button_text: String,
     pub save_input_placeholder: String,
     pub urls_placeholder: String,

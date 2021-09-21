@@ -43,4 +43,5 @@ pub enum Message {
     DownloadsComplete(()),
     Url(usize, EntryMessage),
     SettingsChanged(SettingType),
+    SettingsSaved,
 }

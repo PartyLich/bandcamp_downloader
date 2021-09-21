@@ -12,6 +12,7 @@ use crate::ui::{
 /// Settings view UI state
 #[derive(Debug, Default)]
 pub struct State {
+    pub save: button::State,
     pub cancel: button::State,
     pub filename_input: text_input::State,
 }
@@ -19,6 +20,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
+            save: button::State::new(),
             cancel: button::State::new(),
             filename_input: text_input::State::new(),
         }
@@ -39,7 +41,9 @@ pub fn view<'a>(
     );
     let controls = Row::new()
         .push(Space::with_width(Length::Fill))
-        .push(buttons::cancel_settings(&mut state.cancel, intl));
+        .push(buttons::cancel_settings(&mut state.cancel, intl))
+        .push(Space::with_width(Length::Units(10)))
+        .push(buttons::save_settings(&mut state.save, intl));
 
     let settings = Column::new()
         .spacing(5)

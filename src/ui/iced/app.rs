@@ -211,6 +211,12 @@ impl Application for App {
             Message::DownloadsComplete(_) => {
                 log_info(self.sender.clone(), "All downloads complete");
             }
+            Message::SettingsSaved => {
+                let settings = self.user_settings.clone();
+                return Command::perform(async move { settings.lock().unwrap().save() }, |_| {
+                    Message::OpenMain
+                });
+            }
             Message::SetSaveDir => {}
             Message::SettingsChanged(..) => {}
         }
