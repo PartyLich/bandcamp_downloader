@@ -44,6 +44,11 @@ pub fn view<'a>(
         &intl.art_in_folder,
         Message::ArtInFolderToggled,
     );
+    let art_in_tags_checkbox = components::checkbox_row(
+        settings.save_cover_art_in_tags,
+        &intl.art_in_tags,
+        Message::ArtInTagsToggled,
+    );
     let controls = Row::new()
         .push(Space::with_width(Length::Fill))
         .push(buttons::cancel_settings(&mut state.cancel, intl))
@@ -57,6 +62,7 @@ pub fn view<'a>(
         .push(filename_format)
         .push(modify_tags_checkbox)
         .push(art_in_folder_checkbox)
+        .push(art_in_tags_checkbox)
         .push(Space::with_height(Length::Fill))
         .push(controls);
 

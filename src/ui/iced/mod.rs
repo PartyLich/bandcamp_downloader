@@ -36,6 +36,7 @@ pub enum Message {
     DiscographyToggled(bool),
     ModifyTagsToggled(bool),
     ArtInFolderToggled(bool),
+    ArtInTagsToggled(bool),
     OpenSettings,
     OpenMain,
     AddUrl,
