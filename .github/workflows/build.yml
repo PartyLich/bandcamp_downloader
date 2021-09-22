@@ -7,44 +7,6 @@ on:
       - 'v*.*.*'
 
 jobs:
-  bandcamp_downloader_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Rust
-        uses: hecrj/setup-rust-action@v1
-
-      - name: Install cargo-deb
-        run: cargo install cargo-deb
-
-      - name: Install dependencies
-        run: |
-          export DEBIAN_FRONTED=noninteractive
-          sudo apt-get -qq update
-          sudo apt-get install -y libxkbcommon-dev
-
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: Enable Link Time Optimizations
-        run: |
-          echo "[profile.release]" >> Cargo.toml
-          echo "lto = true" >> Cargo.toml
-
-      - name: Build binary
-        run: cargo build --verbose --release
-
-      - name: Create release dir
-        run: |
-          mkdir linux_bin
-          cp -r intl linux_bin/
-          cp target/release/bandcamp_downloader linux_bin/
-
-      - name: Archive binary
-        uses: actions/upload-artifact@v1
-        with:
-          name: bandcamp_downloader-x86_64-unknown-linux-gnu
-          path: linux_bin/
-
     # TODO deb build that includes resources
     # - name: Pack bandcamp_downloader .deb package
     #   run: cargo deb --no-build
@@ -58,11 +20,36 @@ jobs:
     #     name: bandcamp_downloader-x86_64-debian-linux-gnu
     #     path: target/debian/bandcamp_downloader-x86_64-debian-linux-gnu.deb
 
-  bandcamp_downloader_windows:
-    runs-on: windows-latest
+  binary_build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macOS-latest
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
     steps:
       - name: Setup Rust
         uses: hecrj/setup-rust-action@v1
+
+      - name: Install cargo-deb
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo install cargo-deb
+
+      - name: Install ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          export DEBIAN_FRONTED=noninteractive
+          sudo apt-get -qq update
+          sudo apt-get install -y libxkbcommon-dev
 
       - name: Checkout
         uses: actions/checkout@master
@@ -73,58 +60,36 @@ jobs:
           echo "lto = true" >> Cargo.toml
 
       - name: Enable static CRT linkage
+        if: matrix.os == 'windows-latest'
         run: |
           mkdir .cargo
           echo '[target.x86_64-pc-windows-msvc]' >> .cargo/config
           echo 'rustflags = ["-Ctarget-feature=+crt-static"]' >> .cargo/config
 
       - name: Build bandcamp_downloader binary
-        run: cargo build --verbose --release
-
-      - name: Create release dir
-        run: |
-          mkdir release_bin
-          cp -r intl release_bin/
-          cp target/release/bandcamp_downloader.exe release_bin/
-      # TODO include any other windows deps
-
-      - name: Archive binary
-        uses: actions/upload-artifact@v1
-        with:
-          name: bandcamp_downloader-x86_64-pc-windows-msvc
-          path: release_bin/
-
-  # UNTESTED
-  bandcamp_downloader_macos:
-    runs-on: macOS-latest
-    steps:
-      - name: Setup Rust
-        uses: hecrj/setup-rust-action@v1
-
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: Enable Link Time Optimizations
-        run: |
-          echo "[profile.release]" >> Cargo.toml
-          echo "lto = true" >> Cargo.toml
-
-      - name: Build bandcamp_downloader binary
+        # TODO: set only on macOS
         env:
           MACOSX_DEPLOYMENT_TARGET: 10.14
         run: cargo build --verbose --release
 
       - name: Create release dir
+        shell: bash
         run: |
           mkdir release_bin
           cp -r intl release_bin/
-          cp target/release/bandcamp_downloader release_bin/
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp target/release/bandcamp_downloader.exe release_bin/
+          else
+            cp target/release/bandcamp_downloader release_bin/
+          fi
+          if [ "${{ matrix.os }}" = "macOS-latest" ]; then
           chmod +x release_bin/bandcamp_downloader
+          fi
 
       - name: Archive binary
         uses: actions/upload-artifact@v1
         with:
-          name: bandcamp_downloader-x86_64-apple-darwin
+          name: bandcamp_downloader-${{ matrix.target }}
           path: release_bin/
 
   # see https://github.com/orhun/git-cliff-action#examples
@@ -162,9 +127,7 @@ jobs:
   # see https://github.com/marketplace/actions/create-release
   create_release:
     needs:
-      - bandcamp_downloader_linux
-      - bandcamp_downloader_macos
-      - bandcamp_downloader_windows
+      - binary_build
       - changelog
     runs-on: ubuntu-latest
     steps:
