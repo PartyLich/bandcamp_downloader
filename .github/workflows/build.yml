@@ -33,6 +33,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: macOS-latest
             target: x86_64-apple-darwin
+            mac_target: 10.14
           - os: windows-latest
             target: x86_64-pc-windows-msvc
 
@@ -67,9 +68,8 @@ jobs:
           echo 'rustflags = ["-Ctarget-feature=+crt-static"]' >> .cargo/config
 
       - name: Build bandcamp_downloader binary
-        # TODO: set only on macOS
         env:
-          MACOSX_DEPLOYMENT_TARGET: 10.14
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.mac_target }}
         run: cargo build --verbose --release
 
       - name: Create release dir
@@ -131,7 +131,6 @@ jobs:
       - changelog
     runs-on: ubuntu-latest
     steps:
-    # - uses: actions/checkout@v2
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "bandcamp_downloader-*"
