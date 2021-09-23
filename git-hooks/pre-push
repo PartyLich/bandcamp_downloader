@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# run tests before push
+cargo t
