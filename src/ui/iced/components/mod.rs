@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use iced::{Checkbox, Element, Length, ProgressBar, Row, Text};
+use iced::{Checkbox, Length, ProgressBar, Row, Text};
 
 use crate::{
     ui::iced::{style, Message},

@@ -1,10 +1,7 @@
 use iced::{scrollable, Column, Container, Element, Length, Scrollable};
 
 use super::StyledText;
-use crate::{
-    ui::iced::{style, Message},
-    ui::IntlString,
-};
+use crate::ui::{iced::Message, IntlString};
 
 pub fn event_log<'a>(
     state: &'a mut scrollable::State,

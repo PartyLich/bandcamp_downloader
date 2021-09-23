@@ -1,4 +1,4 @@
-use iced::{button, Button, Element, HorizontalAlignment, Length};
+use iced::{button, Button, HorizontalAlignment, Length};
 
 use super::StyledText;
 use crate::{

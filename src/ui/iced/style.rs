@@ -1,4 +1,4 @@
-use iced::{button, progress_bar, Background, Color, Vector};
+use iced::{button, progress_bar, Background, Color};
 
 #[derive(Debug, PartialEq)]
 pub enum Theme {

@@ -8,12 +8,7 @@ use super::{
     components::{main_view, settings_view, Entry, EntryMessage},
     subscription, Message,
 };
-use crate::{
-    core::DownloadService,
-    helper::{log_error, log_info, log_warn},
-    settings::UserSettings,
-    ui,
-};
+use crate::{core::DownloadService, helper::log_info, settings::UserSettings, ui};
 
 /// Application flags
 #[derive(Debug)]

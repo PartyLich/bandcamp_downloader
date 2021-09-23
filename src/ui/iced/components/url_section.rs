@@ -1,10 +1,7 @@
 use iced::{scrollable, text_input, Column, Container, Element, Length, Scrollable};
 
 use super::{styled_text_input::styled_text_input, Entry};
-use crate::{
-    ui::iced::{style, Message},
-    ui::IntlString,
-};
+use crate::ui::{iced::Message, IntlString};
 
 fn url_input<'a>(
     state: &'a mut iced::text_input::State,
