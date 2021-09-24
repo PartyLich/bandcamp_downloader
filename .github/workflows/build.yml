@@ -132,14 +132,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all workflow run artifacts
+        id: download
         uses: actions/download-artifact@v2
+
+      - name: 'Echo download path'
+        run: echo ${{steps.download.outputs.download-path}}
+
+      - name: Compress artifacts again
+        run: |
+          # -9 compress better, -y store symlinks, -r recurse dirs, -v verbose
+            zip -9yrv bandcamp_downloader-x86_64-pc-windows-msvc.zip bandcamp_downloader-x86_64-pc-windows-msvc;
+            # create, gzip, verbose, file
+            tar -czvf bandcamp_downloader-x86_64-unknown-linux-gnu.tar.gz bandcamp_downloader-x86_64-unknown-linux-gnu;
+            tar -czvf bandcamp_downloader-x86_64-apple-darwin.tar.gz bandcamp_downloader-x86_64-apple-darwin;
 
       - name: Display structure of downloaded files
         run: ls -R
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "bandcamp_downloader-*"
+          artifacts: "bandcamp_downloader-*.zip,bandcamp_downloader-*.gz"
           body: ${{ needs.changelog.outputs.release_body }}
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
