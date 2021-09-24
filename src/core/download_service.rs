@@ -17,8 +17,6 @@ impl DownloadService {
     }
 
     /// Start downloads
-
-    /// Start downloads
     pub async fn start_downloads(
         self: Arc<Self>,
         urls: String,
