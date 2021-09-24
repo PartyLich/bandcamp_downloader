@@ -81,9 +81,7 @@ jobs:
             cp target/release/bandcamp_downloader.exe release_bin/
           else
             cp target/release/bandcamp_downloader release_bin/
-          fi
-          if [ "${{ matrix.os }}" = "macOS-latest" ]; then
-          chmod +x release_bin/bandcamp_downloader
+            chmod +x release_bin/bandcamp_downloader
           fi
 
       - name: Archive binary
