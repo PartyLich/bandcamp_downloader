@@ -185,16 +185,14 @@ impl Application for App {
                 self.cur_view = View::Main;
             }
             Message::Domain(ui::Message::StartDownloads) => {
-                log_info(
-                    self.sender.clone(),
-                    format!("Start download\n{}", self.urls()),
-                );
+                let urls = self.urls();
+                log_info(self.sender.clone(), format!("Start download\n{}", urls));
                 self.ui_state.main.downloading_files.clear();
 
                 let settings = self.user_settings.lock().unwrap().clone();
                 return Command::perform(
                     Arc::clone(&self.download_service).start_downloads(
-                        self.urls(),
+                        urls,
                         self.sender.clone(),
                         settings,
                     ),
