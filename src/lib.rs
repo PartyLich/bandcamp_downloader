@@ -30,7 +30,16 @@ lazy_static! {
     static ref BAND_RE: Regex = Regex::new(r#"(?m)"desktop-header">\s*<a href="(?P<url>.*?)".*?</a>"#).unwrap();
     /// album and track url parsing
     static ref ALBUM_RE: Regex = Regex::new("href=\"(?P<album_url>/(album|track)/.*?)\"").unwrap();
+    // html escape replacements
+    // TODO: use one of the libraries dedicated to this task?
+    // " is replaced with &quot;
     static ref HTML_QUOTE_RE: Regex = Regex::new(r#"&quot;"#).unwrap();
+    // & is replaced with &amp;
+    static ref HTML_AMP_RE: Regex = Regex::new(r#"&amp;"#).unwrap();
+    // < is replaced with &lt;
+    static ref HTML_LT_RE: Regex = Regex::new(r#"&lt;"#).unwrap();
+    // > is replaced with &gt;
+    static ref HTML_GT_RE: Regex = Regex::new(r#"&gt;"#).unwrap();
 }
 
 /// Get text from a url using the reqwest shortcut method
@@ -538,6 +547,51 @@ mod test {
         let msg = "should replace html escaped quotes";
         let expected = r#"data-tralbum="{"url":"}""#;
         let actual = HTML_QUOTE_RE.replace_all(&s, "\"");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_ampersand_regex() {
+        let s = r#"Madness &amp; Hubris"#;
+
+        let msg = "should find html escaped ampersand";
+        let expected = true;
+        let actual = HTML_AMP_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '&'";
+        let expected = r#"Madness & Hubris"#;
+        let actual = HTML_AMP_RE.replace_all(&s, "&");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_lt_regex() {
+        let s = r#"&lt;foo &lt;bar"#;
+
+        let msg = "should find html escaped '<'";
+        let expected = true;
+        let actual = HTML_LT_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '<'";
+        let expected = r#"<foo <bar"#;
+        let actual = HTML_LT_RE.replace_all(&s, "<");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_gt_regex() {
+        let s = r#"foo&gt; bar&gt;"#;
+
+        let msg = "should find html escaped '>'";
+        let expected = true;
+        let actual = HTML_GT_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '>'";
+        let expected = r#"foo> bar>"#;
+        let actual = HTML_GT_RE.replace_all(&s, ">");
         assert_eq!(actual, expected, "{}", msg);
     }
 

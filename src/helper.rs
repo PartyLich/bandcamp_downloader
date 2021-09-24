@@ -7,7 +7,7 @@ use crate::{
     error::Error,
     model::{Album, JsonAlbum},
     ui::{LogLevel, Message},
-    Result, ALBUM_RE, BAND_RE, HTML_QUOTE_RE,
+    Result, ALBUM_RE, BAND_RE, HTML_AMP_RE, HTML_GT_RE, HTML_LT_RE, HTML_QUOTE_RE,
 };
 
 mod file_helper;
@@ -39,6 +39,9 @@ fn get_album_data(raw_html: &str) -> Result<String> {
     }
 
     let album_data = HTML_QUOTE_RE.replace_all(raw_html, "\"");
+    let album_data = HTML_AMP_RE.replace_all(&album_data, "&");
+    let album_data = HTML_LT_RE.replace_all(&album_data, "<");
+    let album_data = HTML_GT_RE.replace_all(&album_data, ">");
     ALBUM_DATA_RE
         .captures(&album_data)
         .and_then(|captures| captures.name("data"))
@@ -173,7 +176,7 @@ mod test {
             tracks: vec![Track {
                 duration: 311.327,
                 lyrics: None,
-                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&amp;ts=1631806573&amp;t=1c02736b48124fcde7acb2743812134a3e4b25de&amp;token=1631806573_49c0e23c8c2b500fcf206501d703e81527972f5b"),
+                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1631806573&t=1c02736b48124fcde7acb2743812134a3e4b25de&token=1631806573_49c0e23c8c2b500fcf206501d703e81527972f5b"),
                 number: 1,
                 path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
                 title: String::from("Final Lap")
