@@ -176,3 +176,4 @@ jobs:
           artifactErrorsFailBuild: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
+          tag: v0.1.0
