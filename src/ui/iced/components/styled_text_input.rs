@@ -2,10 +2,7 @@ use iced::{Align, Row};
 use iced::{Element, TextInput};
 
 use super::TEXT_SIZE;
-use crate::{
-    ui::iced::{style, Message},
-    ui::IntlString,
-};
+use crate::ui::{iced::Message, IntlString};
 
 /// Returns a styled TextInput
 pub fn styled_text_input<'a, F>(

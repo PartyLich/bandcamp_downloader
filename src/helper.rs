@@ -7,8 +7,11 @@ use crate::{
     error::Error,
     model::{Album, JsonAlbum},
     ui::{LogLevel, Message},
-    Result, ALBUM_RE, BAND_RE, HTML_QUOTE_RE,
+    Result, ALBUM_RE, BAND_RE, HTML_AMP_RE, HTML_GT_RE, HTML_LT_RE, HTML_QUOTE_RE,
 };
+
+mod file_helper;
+pub use file_helper::*;
 
 fn log_channel<T: ToString>(mut sender: mpsc::Sender<Message>, level: LogLevel, msg: T) {
     sender
@@ -36,6 +39,9 @@ fn get_album_data(raw_html: &str) -> Result<String> {
     }
 
     let album_data = HTML_QUOTE_RE.replace_all(raw_html, "\"");
+    let album_data = HTML_AMP_RE.replace_all(&album_data, "&");
+    let album_data = HTML_LT_RE.replace_all(&album_data, "<");
+    let album_data = HTML_GT_RE.replace_all(&album_data, ">");
     ALBUM_DATA_RE
         .captures(&album_data)
         .and_then(|captures| captures.name("data"))
@@ -60,7 +66,7 @@ fn fix_json(album_data: &str) -> String {
 
 /// Retrieves the data on the album of the specified Bandcamp page.  Takes the HTML source code of
 /// a Bandcamp album page and returns the data on the album of the specified Bandcamp page.
-pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
+pub fn get_album(raw_html: &str, folder_path: &str, filename_format: &str) -> Result<Album> {
     // Keep the necessary part of the html only
     // it's a js object literal, which isnt JSON, so we need to adjust it to match the actual
     // spec prior to deserialization
@@ -68,7 +74,8 @@ pub fn get_album(raw_html: &str, folder_path: &str) -> Result<Album> {
     let album_data = get_album_data(&album_data)?;
     // Deserialize JSON
     // TODO serializer interface
-    let album = serde_json::from_str::<JsonAlbum>(&album_data)?.into_album(folder_path);
+    let album =
+        serde_json::from_str::<JsonAlbum>(&album_data)?.into_album(folder_path, filename_format);
 
     // TODO lyrics
     // Extract lyrics from album page
@@ -102,27 +109,6 @@ pub fn get_albums_url(raw_html: &str) -> Result<Vec<String>> {
         return Err(Error::NoAlbumFound);
     }
     Ok(album_urls.into_iter().collect())
-}
-
-// Windows rules: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
-pub fn sanitize_file_name(file_name: &str) -> String {
-    lazy_static! {
-        static ref TRAIL_DOTS: Regex = regex::Regex::new(r"\.+$").unwrap();
-        static ref WHITESPACE: Regex = regex::Regex::new(r"\s+").unwrap();
-        static ref RESERVED_CHARS: Regex = regex::Regex::new(r#"[\\/:*?"<>|]"#).unwrap();
-    }
-
-    // Replace reserved characters by '_'
-    let file_name = RESERVED_CHARS.replace_all(file_name, "_");
-
-    // Remove trailing dot(s)
-    let file_name = TRAIL_DOTS.replace(&file_name, "");
-
-    // Replace whitespace(s) by ' '
-    let file_name = WHITESPACE.replace_all(&file_name, " ");
-
-    // Remove trailing whitespace
-    file_name.trim_end().to_string()
 }
 
 #[cfg(test)]
@@ -169,7 +155,7 @@ mod test {
             tracks: vec![Track {
                 duration: 311.327,
                 lyrics: None,
-                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&amp;ts=1631806573&amp;t=1c02736b48124fcde7acb2743812134a3e4b25de&amp;token=1631806573_49c0e23c8c2b500fcf206501d703e81527972f5b"),
+                mp3_url: String::from("https://t4.bcbits.com/stream/8e264c1615dca0ab965f6e3b320ea9da/mp3-128/350943074?p=0&ts=1631806573&t=1c02736b48124fcde7acb2743812134a3e4b25de&token=1631806573_49c0e23c8c2b500fcf206501d703e81527972f5b"),
                 number: 1,
                 path: String::from("/home/partylich/music/test/The Racers/2020 - Final Lap/01 - Final Lap.mp3"),
                 title: String::from("Final Lap")
@@ -177,7 +163,8 @@ mod test {
             ],
         };
         let save_dir = "/home/partylich/music/test/{artist}/{year} - {album}";
-        let actual = get_album(strings::TRALBUM_HTML, save_dir).unwrap();
+        let filename_format = "{tracknum} - {title}.mp3";
+        let actual = get_album(strings::TRALBUM_HTML, save_dir, filename_format).unwrap();
         assert_eq!(actual, expected, "{}", msg);
     }
 
@@ -194,13 +181,5 @@ mod test {
         actual.sort();
         expected.sort();
         assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn format_filename() {
-        let msg = "should replace reserved chars with '_'";
-        let expected = "Foo_________Bar";
-        let actual = sanitize_file_name(r#"Foo?*/\|<>:"Bar   ..."#);
-        assert_eq!(actual, expected, "{}", msg);
     }
 }

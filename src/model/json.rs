@@ -42,7 +42,7 @@ pub struct JsonTrack {
 }
 
 impl JsonTrack {
-    pub fn into_track(self, album: &Album) -> Option<Track> {
+    pub fn into_track(self, album: &Album, filename_format: &str) -> Option<Track> {
         let mp3_url = self.file.map(|file| {
             if file.url.starts_with("//") {
                 return format!("http:{}", file.url);
@@ -60,6 +60,7 @@ impl JsonTrack {
             mp3_url,
             number.unwrap(),
             self.title,
+            filename_format,
         )
         .into()
     }
@@ -91,7 +92,7 @@ pub struct JsonAlbum {
 }
 
 impl JsonAlbum {
-    pub fn into_album(self, folder_path: &str) -> Album {
+    pub fn into_album(self, folder_path: &str, filename_format: &str) -> Album {
         const URL_END: &str = "_0.jpg";
         // Uses the art_id variable to retrieve the image from Bandcamp hosting site
         const URL_START: &str = "https://f4.bcbits.com/img/a";
@@ -114,7 +115,7 @@ impl JsonAlbum {
         album.tracks = self
             .tracks
             .into_iter()
-            .filter_map(|t| t.into_track(&album))
+            .filter_map(|t| t.into_track(&album, filename_format))
             .collect();
 
         album

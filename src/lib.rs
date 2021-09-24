@@ -5,7 +5,7 @@ use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
-use tokio::{fs, io::AsyncWriteExt, sync::RwLock};
+use tokio::{fs, io::AsyncWriteExt};
 
 use error::Error;
 use model::{Album, Track};
@@ -30,7 +30,16 @@ lazy_static! {
     static ref BAND_RE: Regex = Regex::new(r#"(?m)"desktop-header">\s*<a href="(?P<url>.*?)".*?</a>"#).unwrap();
     /// album and track url parsing
     static ref ALBUM_RE: Regex = Regex::new("href=\"(?P<album_url>/(album|track)/.*?)\"").unwrap();
+    // html escape replacements
+    // TODO: use one of the libraries dedicated to this task?
+    // " is replaced with &quot;
     static ref HTML_QUOTE_RE: Regex = Regex::new(r#"&quot;"#).unwrap();
+    // & is replaced with &amp;
+    static ref HTML_AMP_RE: Regex = Regex::new(r#"&amp;"#).unwrap();
+    // < is replaced with &lt;
+    static ref HTML_LT_RE: Regex = Regex::new(r#"&lt;"#).unwrap();
+    // > is replaced with &gt;
+    static ref HTML_GT_RE: Regex = Regex::new(r#"&gt;"#).unwrap();
 }
 
 /// Get text from a url using the reqwest shortcut method
@@ -142,7 +151,11 @@ async fn get_artist_discography(urls: &HashSet<&str>) -> Vec<String> {
 }
 
 /// Returns the albums located at the specified URLs.
-async fn get_albums(urls: HashSet<&str>, save_dir: &str) -> Result<Vec<Album>> {
+async fn get_albums(
+    urls: HashSet<&str>,
+    save_dir: &str,
+    filename_format: &str,
+) -> Result<Vec<Album>> {
     let client = reqwest::Client::new();
 
     let tasks = urls.iter().map(|url| {
@@ -163,7 +176,7 @@ async fn get_albums(urls: HashSet<&str>, save_dir: &str) -> Result<Vec<Album>> {
             };
 
             // Get info on album
-            let album = match helper::get_album(&raw_html, save_dir) {
+            let album = match helper::get_album(&raw_html, save_dir, filename_format) {
                 Ok(a) => a,
                 Err(_) => {
                     println!("Could not retrieve album info for {}", url);
@@ -197,7 +210,12 @@ fn prepend_http(url: &str) -> String {
 }
 
 /// Fetch albums data from the URLs specified when creating this DownloadManager.
-pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Album> {
+pub async fn fetch_urls(
+    urls: &str,
+    discography: bool,
+    save_dir: &str,
+    filename_format: &str,
+) -> Vec<Album> {
     let retrieve_file_size = false;
     let urls: HashSet<_> = urls.lines().map(prepend_http).collect();
     let urls: HashSet<_> = urls.iter().map(|s| s.as_str()).collect();
@@ -209,9 +227,13 @@ pub async fn fetch_urls(urls: &str, discography: bool, save_dir: &str) -> Vec<Al
         let url_list = get_artist_discography(&urls).await;
         let urls = url_list.iter().map(|s| s.as_str()).collect();
 
-        get_albums(urls, save_dir).await.expect("FIXME")
+        get_albums(urls, save_dir, filename_format)
+            .await
+            .expect("FIXME")
     } else {
-        get_albums(urls, save_dir).await.expect("FIXME")
+        get_albums(urls, save_dir, filename_format)
+            .await
+            .expect("FIXME")
     }
 }
 
@@ -246,6 +268,7 @@ async fn download_track_stream(
                 LogLevel::Info,
             ))
             .expect("Failed to send message");
+        // TODO: redownload if size exceeds allowed difference
         return Err(Error::Io(String::from("File already exists")));
     }
 
@@ -431,11 +454,7 @@ async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
 }
 
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(
-    album: Album,
-    sender: mpsc::Sender<Message>,
-    settings: Arc<RwLock<UserSettings>>,
-) {
+async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: Arc<UserSettings>) {
     let UserSettings {
         allowed_file_size_difference,
         save_cover_art_in_folder,
@@ -443,7 +462,7 @@ async fn download_album(
         modify_tags,
         download_max_tries,
         ..
-    } = *settings.read().await;
+    } = *settings;
 
     // TODO cancellation
 
@@ -528,6 +547,51 @@ mod test {
         let msg = "should replace html escaped quotes";
         let expected = r#"data-tralbum="{"url":"}""#;
         let actual = HTML_QUOTE_RE.replace_all(&s, "\"");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_ampersand_regex() {
+        let s = r#"Madness &amp; Hubris"#;
+
+        let msg = "should find html escaped ampersand";
+        let expected = true;
+        let actual = HTML_AMP_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '&'";
+        let expected = r#"Madness & Hubris"#;
+        let actual = HTML_AMP_RE.replace_all(&s, "&");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_lt_regex() {
+        let s = r#"&lt;foo &lt;bar"#;
+
+        let msg = "should find html escaped '<'";
+        let expected = true;
+        let actual = HTML_LT_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '<'";
+        let expected = r#"<foo <bar"#;
+        let actual = HTML_LT_RE.replace_all(&s, "<");
+        assert_eq!(actual, expected, "{}", msg);
+    }
+
+    #[test]
+    fn html_gt_regex() {
+        let s = r#"foo&gt; bar&gt;"#;
+
+        let msg = "should find html escaped '>'";
+        let expected = true;
+        let actual = HTML_GT_RE.is_match(&s);
+        assert_eq!(actual, expected, "{}", msg);
+
+        let msg = "should replace html escaped '>'";
+        let expected = r#"foo> bar>"#;
+        let actual = HTML_GT_RE.replace_all(&s, ">");
         assert_eq!(actual, expected, "{}", msg);
     }
 
