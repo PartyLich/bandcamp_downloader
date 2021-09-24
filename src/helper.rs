@@ -111,27 +111,6 @@ pub fn get_albums_url(raw_html: &str) -> Result<Vec<String>> {
     Ok(album_urls.into_iter().collect())
 }
 
-// Windows rules: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
-pub fn sanitize_file_name(file_name: &str) -> String {
-    lazy_static! {
-        static ref TRAIL_DOTS: Regex = regex::Regex::new(r"\.+$").unwrap();
-        static ref WHITESPACE: Regex = regex::Regex::new(r"\s+").unwrap();
-        static ref RESERVED_CHARS: Regex = regex::Regex::new(r#"[\\/:*?"<>|]"#).unwrap();
-    }
-
-    // Replace reserved characters by '_'
-    let file_name = RESERVED_CHARS.replace_all(file_name, "_");
-
-    // Remove trailing dot(s)
-    let file_name = TRAIL_DOTS.replace(&file_name, "");
-
-    // Replace whitespace(s) by ' '
-    let file_name = WHITESPACE.replace_all(&file_name, " ");
-
-    // Remove trailing whitespace
-    file_name.trim_end().to_string()
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -202,13 +181,5 @@ mod test {
         actual.sort();
         expected.sort();
         assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn format_filename() {
-        let msg = "should replace reserved chars with '_'";
-        let expected = "Foo_________Bar";
-        let actual = sanitize_file_name(r#"Foo?*/\|<>:"Bar   ..."#);
-        assert_eq!(actual, expected, "{}", msg);
     }
 }
