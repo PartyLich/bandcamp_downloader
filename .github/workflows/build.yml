@@ -70,7 +70,7 @@ jobs:
       - name: Build bandcamp_downloader binary
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.mac_target }}
-        run: cargo build --verbose --release
+        run: cargo build --verbose --release --locked
 
       - name: Create release dir
         shell: bash
