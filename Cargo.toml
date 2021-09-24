@@ -1,6 +1,6 @@
 [package]
 name = "bandcamp_downloader"
-version = "0.0.0"
+version = "0.1.0"
 license = "AGPL-3.0-only"
 publish = false
 authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
