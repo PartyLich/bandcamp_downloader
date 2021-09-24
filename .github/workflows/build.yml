@@ -128,28 +128,46 @@ jobs:
       - binary_build
       - changelog
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macOS-latest
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
     steps:
-      - name: Download all workflow run artifacts
+      - name: Download binary artifact
         id: download
         uses: actions/download-artifact@v2
+        with:
+          name: bandcamp_downloader-${{ matrix.target }}
+          path: bandcamp_downloader-${{ matrix.target }}
 
       - name: 'Echo download path'
         run: echo ${{steps.download.outputs.download-path}}
 
-      - name: Compress artifacts again
+      - name: Compress binary artifact again
         run: |
-          # -9 compress better, -y store symlinks, -r recurse dirs, -v verbose
-            zip -9yrv bandcamp_downloader-x86_64-pc-windows-msvc.zip bandcamp_downloader-x86_64-pc-windows-msvc;
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            # -9 compress better, -y store symlinks, -r recurse dirs, -v verbose
+            zip -9yrv "bandcamp_downloader-${{ matrix.target }}.zip" "bandcamp_downloader-${{ matrix.target }}";
+          else
             # create, gzip, verbose, file
-            tar -czvf bandcamp_downloader-x86_64-unknown-linux-gnu.tar.gz bandcamp_downloader-x86_64-unknown-linux-gnu;
-            tar -czvf bandcamp_downloader-x86_64-apple-darwin.tar.gz bandcamp_downloader-x86_64-apple-darwin;
+            tar -czvf "bandcamp_downloader-${{ matrix.target }}.tar.gz" "bandcamp_downloader-${{ matrix.target }}";
+          fi
 
       - name: Display structure of downloaded files
         run: ls -R
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "bandcamp_downloader-*.zip,bandcamp_downloader-*.gz"
+          artifacts: "bandcamp_downloader-${{ matrix.target }}.*"
           body: ${{ needs.changelog.outputs.release_body }}
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
