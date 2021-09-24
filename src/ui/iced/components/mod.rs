@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use iced::{Checkbox, Element, Length, ProgressBar, Row, Text};
+use iced::{Checkbox, Length, ProgressBar, Row, Text};
 
 use crate::{
     ui::iced::{style, Message},
@@ -9,6 +9,7 @@ use crate::{
 
 use controls::controls;
 use event_log::event_log;
+use file_format_input::filename_format;
 use styled_text as StyledText;
 use styled_text_input::save_dir;
 use url_section::{url_section, UrlState};
@@ -19,7 +20,9 @@ mod buttons;
 mod controls;
 mod entry;
 mod event_log;
+mod file_format_input;
 pub mod main_view;
+pub mod settings_view;
 mod styled_text_input;
 mod url_section;
 
@@ -30,16 +33,24 @@ fn styled_text<T: Into<String>>(text: T) -> Text {
     Text::new(text).size(TEXT_SIZE)
 }
 
+pub fn checkbox_row<'a, F>(state: bool, label: &str, msg: F) -> Row<'a, Message>
+where
+    F: 'static + Fn(bool) -> Message,
+{
+    let checkbox = Checkbox::new(state, label, msg)
+        .size(16)
+        .text_size(TEXT_SIZE);
+
+    Row::new().push(checkbox)
+}
+
+/// Checkbox for toggling discography download option
 pub fn discography_checkbox<'a>(state: bool, intl: &IntlString) -> Row<'a, Message> {
-    let checkbox = Checkbox::new(
+    checkbox_row(
         state,
         &intl.discography_checkbox,
         Message::DiscographyToggled,
     )
-    .size(16)
-    .text_size(TEXT_SIZE);
-
-    Row::new().push(checkbox)
 }
 
 /// Creates a ProgressBar to display the completion percentage calculated from a set of Progress

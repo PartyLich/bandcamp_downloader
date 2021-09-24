@@ -1,9 +1,6 @@
 use iced::{button, Element, Length, Row, Space};
 
-use crate::ui::{
-    iced::{style, Message},
-    IntlString,
-};
+use crate::ui::{iced::Message, IntlString};
 
 use super::buttons;
 

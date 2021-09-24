@@ -1,12 +1,19 @@
 {
   "title": "Bandcamp Downloader",
+  "settings_title": "Bandcamp Downloader: Settings",
   "save_caption": "Save albums to",
   "discography_checkbox": "Download artist discography",
+  "modify_tags_checkbox": "Modify track tags (id3)",
+  "art_in_folder": "Save album artwork in folder",
+  "art_in_tags": "Save album artwork in tags",
   "log_placeholder": "Ready to rock",
   "download_button_text": "Download",
   "settings_button_text": "Settings",
+  "main_button_text": "Cancel",
+  "save_settings_button": "Save",
   "cancel_button_text": "Cancel",
   "save_input_placeholder": "Enter enter a directory with placeholders",
   "urls_placeholder": "Enter a BandCamp url, press return to add",
-  "delete_button":"Delete"
+  "delete_button":"Delete",
+  "filename_format": "Filename format"
 }
