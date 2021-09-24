@@ -131,9 +131,12 @@ jobs:
       - changelog
     runs-on: ubuntu-latest
     steps:
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: "bandcamp_downloader-*"
-        body: ${{ needs.changelog.outputs.release_body }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: true
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "bandcamp_downloader-*"
+          body: ${{ needs.changelog.outputs.release_body }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
