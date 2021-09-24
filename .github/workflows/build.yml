@@ -138,5 +138,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           allowUpdates: true
+          artifactErrorsFailBuild: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
