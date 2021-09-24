@@ -163,6 +163,7 @@ jobs:
           fi
 
       - name: Display structure of downloaded files
+        if: ${{ always() }}
         run: ls -R
 
       - uses: ncipollo/release-action@v1
