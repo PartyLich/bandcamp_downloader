@@ -1,5 +1,5 @@
 //! Functions for downloading mp3s from bandcamp
-use std::{collections::HashSet, convert::TryFrom, path::Path, sync::Arc};
+use std::{collections::HashSet, convert::TryFrom, path::Path, path::PathBuf, sync::Arc};
 
 use chrono::Datelike;
 use futures::channel::mpsc;
@@ -7,7 +7,7 @@ use futures::future::join_all;
 use regex::Regex;
 use tokio::{fs, io::AsyncWriteExt};
 
-use error::Error;
+use crate::{core::playlist, error::Error};
 use model::{Album, Track};
 use settings::UserSettings;
 use ui::{LogLevel, Message, Progress};
@@ -461,7 +461,11 @@ async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
 }
 
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: Arc<UserSettings>) {
+async fn download_album(
+    album: Album,
+    mut sender: mpsc::Sender<Message>,
+    settings: Arc<UserSettings>,
+) {
     let UserSettings {
         allowed_file_size_difference,
         save_cover_art_in_folder,
@@ -502,12 +506,13 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: A
         .collect();
     join_all(download_tasks).await;
 
+    let album = Arc::new(album);
+
     // Tag tracks if they do not already have a tag
     if modify_tags {
         let mut tag_tasks = Vec::with_capacity(album.tracks.len());
-        let album = Arc::new(album);
         for i in 0..album.tracks.len() {
-            let album = Arc::clone(&album);
+            let album = album.clone();
             let sender = sender.clone();
             let artwork = if save_cover_art_in_tags {
                 artwork.clone()
@@ -522,7 +527,24 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: A
     }
 
     // TODO Save cover art in folder
-    // TODO Create playlist file
+    // Create playlist file
+    if settings.create_playlist {
+        let playlist_path = helper::parse_filename(&settings.playlist_file_name_format, &album);
+        let playlist_path: PathBuf = [&album.path, &playlist_path].iter().collect();
+        let res = playlist::write_playlist(settings.playlist_format, &album, playlist_path);
+        match res {
+            Err(_) => sender.try_send(Message::Log(
+                    format!("An error occured while writing playlist for {}. Make sure you have the rights to write files in the folder you chose", &album.title),
+                    LogLevel::Error,
+                    ))
+                .expect("Failed to send message"),
+            Ok(_) => sender.try_send(Message::Log(
+                    format!("Saved playlist for album \"{}\"", &album.title),
+                    LogLevel::Info,
+                    ))
+                .expect("Failed to send message"),
+        }
+    }
 }
 
 #[cfg(test)]
