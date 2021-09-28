@@ -22,7 +22,7 @@ mod model;
 pub mod settings;
 pub mod ui;
 
-/// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
+/// A [`std::Result`](std::result::Result) alias where the [`Err`] case is `bandcamp_downloader::Error`.
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 lazy_static! {
@@ -209,7 +209,7 @@ fn prepend_http(url: &str) -> String {
     }
 }
 
-/// Fetch albums data from the URLs specified when creating this DownloadManager.
+/// Fetch albums data from the URLs specified.
 pub async fn fetch_urls(
     urls: &str,
     discography: bool,
@@ -265,6 +265,7 @@ async fn download_track_stream(
     let mut tries = 0u32;
     while tries < max_tries {
         // TODO cancellation
+        // TODO reuse client?
         // Start download
         let response = reqwest::get(&track.mp3_url).await;
         if let Err(e) = response {

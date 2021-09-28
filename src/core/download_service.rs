@@ -16,9 +16,10 @@ impl DownloadService {
         Self {}
     }
 
-    /// Start downloads
+    /// Start downloading the files at the specified urls
     pub async fn start_downloads(
         self: Arc<Self>,
+        // TODO: use a Url type (ie with validation, parsing, etc)
         urls: String,
         sender: mpsc::Sender<Message>,
         settings: UserSettings,
@@ -57,7 +58,7 @@ impl DownloadService {
         }
     }
 
-    // Cancel all downloads
+    /// Cancel all downloads in-progress
     pub fn cancel_downloads() {
         todo!();
     }

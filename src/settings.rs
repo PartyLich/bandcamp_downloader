@@ -1,11 +1,14 @@
+//! User configurable application settings
 use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{helper, Result};
 
+/// UI localization option
 #[derive(Debug, Copy, Clone)]
 pub enum Language {
+    /// English (US)
     EN,
 }
 
@@ -42,35 +45,50 @@ impl std::fmt::Display for PlaylistFormat {
     }
 }
 
+/// User configurable application settings
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct UserSettings {
+    /// Allowed difference between expected filesize and actual size on disk
     pub allowed_file_size_difference: f32,
 
+    /// Check for newer releases on startup
     pub check_for_updates: bool,
 
+    /// Download entire artist discography
     pub download_artist_discography: bool,
-
+    /// Maximum number of download attempts
     pub download_max_tries: u32,
+    /// If true, download albums serially; concurrent download otherwise.
     pub download_one_album_at_a_time: bool,
+    /// Base path for album downloads
     pub downloads_path: PathBuf,
 
     /// Time in seconds between retries
     pub download_retry_cooldown: f64,
 
+    /// Format for audio file names
     pub file_name_format: String,
 
+    /// Modify id3 tags for downloaded tracks
     pub modify_tags: bool,
 
     // playlist settings
+    /// Create playlists for downloaded albums
     pub create_playlist: bool,
+    /// File format to write playlists
     pub playlist_format: PlaylistFormat,
+    /// Format for playlist file names
     pub playlist_file_name_format: String,
 
+    /// Fetch file sizes before (ie. separate request) downloading files
     pub retrieve_files_size: bool,
 
     // Cover Art
+    /// Format for cover art file names
     pub cover_art_file_name_format: String,
+    /// Save album cover art in the album directory
     pub save_cover_art_in_folder: bool,
+    /// Save album cover art in the id3 tag
     pub save_cover_art_in_tags: bool,
 
     pub show_verbose_log: bool,
