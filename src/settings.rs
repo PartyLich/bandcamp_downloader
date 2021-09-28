@@ -16,21 +16,15 @@ pub enum PlaylistFormat {
     M3U,
     /// PLS multimedia playlist format
     PLS,
-    /// Windows Media Player format
-    WPL,
-    /// Zune Media Player format
-    ZPL,
 }
 
 impl PlaylistFormat {
-    pub const ALL: [PlaylistFormat; 4] = [Self::M3U, Self::PLS, Self::WPL, Self::ZPL];
+    pub const ALL: [PlaylistFormat; 2] = [Self::M3U, Self::PLS];
 
     pub fn value(&self) -> &str {
         match self {
             Self::M3U => "m3u",
             Self::PLS => "pls",
-            Self::WPL => "wpl",
-            Self::ZPL => "zpl",
         }
     }
 
@@ -38,8 +32,6 @@ impl PlaylistFormat {
         match self {
             Self::M3U => "(MP3 url)",
             Self::PLS => "(PLS multimedia playlist)",
-            Self::WPL => " (Windows Media Player)",
-            Self::ZPL => " (Zune Media Player)",
         }
     }
 }
@@ -70,14 +62,15 @@ pub struct UserSettings {
 
     pub modify_tags: bool,
 
-    pub playlist_file_name_format: String,
-    pub cover_art_file_name_format: String,
-
+    // playlist settings
     pub create_playlist: bool,
     pub playlist_format: PlaylistFormat,
+    pub playlist_file_name_format: String,
 
     pub retrieve_files_size: bool,
 
+    // Cover Art
+    pub cover_art_file_name_format: String,
     pub save_cover_art_in_folder: bool,
     pub save_cover_art_in_tags: bool,
 
@@ -101,10 +94,10 @@ impl Default for UserSettings {
 
             file_name_format: String::from("{tracknum} {artist} - {title}.mp3"),
             cover_art_file_name_format: String::from("{album}"),
-            playlist_file_name_format: String::from("{album}"),
 
-            playlist_format: PlaylistFormat::M3U,
             create_playlist: false,
+            playlist_format: PlaylistFormat::M3U,
+            playlist_file_name_format: String::from("{album}"),
 
             download_artist_discography: false,
             download_one_album_at_a_time: false,
