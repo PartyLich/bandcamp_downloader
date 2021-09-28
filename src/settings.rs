@@ -52,7 +52,6 @@ pub struct UserSettings {
 
     pub download_max_tries: u32,
     pub download_one_album_at_a_time: bool,
-    pub download_albums_serial: bool,
     pub downloads_path: PathBuf,
 
     /// Time in seconds between retries
@@ -101,7 +100,6 @@ impl Default for UserSettings {
 
             download_artist_discography: false,
             download_one_album_at_a_time: false,
-            download_albums_serial: false,
             downloads_path,
             download_max_tries: 7,
             download_retry_cooldown: 0.2,
