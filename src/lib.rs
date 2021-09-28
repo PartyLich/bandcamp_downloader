@@ -7,7 +7,10 @@ use futures::future::join_all;
 use regex::Regex;
 use tokio::{fs, io::AsyncWriteExt};
 
-use crate::{core::playlist, error::Error};
+use crate::{
+    core::{playlist, tag},
+    error::Error,
+};
 use model::{Album, Track};
 use settings::UserSettings;
 use ui::{LogLevel, Message, Progress};
@@ -374,6 +377,7 @@ fn tag_track(
     track_index: usize,
     mut sender: mpsc::Sender<Message>,
     artwork: Option<id3::frame::Picture>,
+    settings: Arc<UserSettings>,
 ) -> Result<()> {
     let track = album
         .tracks
@@ -403,41 +407,20 @@ fn tag_track(
         ))
         .expect("Failed to send message");
 
-    tag.set_album(&album.title);
-    tag.set_artist(&album.artist);
-    tag.set_title(&track.title);
-    tag.set_track(track.number);
     tag.set_total_tracks(album.tracks.len() as u32);
-    if let Some(lyrics) = &track.lyrics {
-        tag.add_lyrics(id3::frame::Lyrics {
-            lang: String::default(),
-            description: String::default(),
-            text: lyrics.to_string(),
-        })
-    }
 
-    let year = album.release_date.year();
-    let month = u8::try_from(album.release_date.month()).ok();
-    let day = u8::try_from(album.release_date.day()).ok();
-    tag.set_date_released(id3::Timestamp {
-        year,
-        month,
-        day,
-        hour: None,
-        minute: None,
-        second: None,
-    });
-    tag.set_year(year);
+    tag::update_album_artist(&mut tag, &album.artist, settings.tag_album_artist);
+    tag::update_artist(&mut tag, &album.artist, settings.tag_artist);
+    tag::update_album_title(&mut tag, &album.title, settings.tag_album_title);
+    tag::update_album_date(&mut tag, &album.release_date, settings.tag_year);
+    tag::update_track_number(&mut tag, track.number, settings.tag_track_number);
+    tag::update_track_title(&mut tag, &track.title, settings.tag_track_title);
+    tag::update_track_lyrics(&mut tag, &track.lyrics, settings.tag_lyrics);
+    tag::update_comments(&mut tag, settings.tag_comments);
 
     if let Some(artwork) = artwork {
         tag.add_picture(artwork);
     }
-
-    tag.add_comment(id3::frame::Comment {
-        lang: "eng".to_string(),
-        description: "".to_string(),
-        text: "Support the artists you enjoy.".to_string(),
-    });
 
     tag.write_to_path(&track.path, id3::Version::Id3v24)
         .map_err(|e| Error::Io(e.description.to_string()))
@@ -515,14 +498,16 @@ async fn download_album(
         for i in 0..album.tracks.len() {
             let album = album.clone();
             let sender = sender.clone();
+            let settings = settings.clone();
             let artwork = if save_cover_art_in_tags {
                 artwork.clone()
             } else {
                 None
             };
-            tag_tasks.push(tokio::spawn(
-                async move { tag_track(album, i, sender, artwork) },
-            ));
+
+            tag_tasks.push(tokio::spawn(async move {
+                tag_track(album, i, sender, artwork, settings)
+            }));
         }
         join_all(tag_tasks).await;
     }
