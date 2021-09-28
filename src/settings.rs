@@ -110,22 +110,23 @@ impl Default for UserSettings {
             allowed_file_size_difference: 0.05,
 
             file_name_format: String::from("{tracknum} {artist} - {title}.mp3"),
-            cover_art_file_name_format: String::from("{album}"),
 
             create_playlist: false,
             playlist_format: PlaylistFormat::M3U,
             playlist_file_name_format: String::from("{album}"),
 
+            downloads_path,
             download_artist_discography: false,
             download_one_album_at_a_time: false,
-            downloads_path,
             download_max_tries: 7,
             download_retry_cooldown: 0.2,
 
             retrieve_files_size: true,
 
+            cover_art_file_name_format: String::from("{album}"),
             save_cover_art_in_folder: false,
             save_cover_art_in_tags: true,
+
             modify_tags: true,
 
             show_verbose_log: false,
