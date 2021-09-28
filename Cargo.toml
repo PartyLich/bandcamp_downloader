@@ -21,6 +21,7 @@ iced_futures = "0.1.2"
 dirs = "3.0.1"
 id3 = "0.6.x"
 m3u = "~1.0.0"
+pls = "~0.2.2"
 
 [dependencies.reqwest]
 version = "0.10.6"

@@ -107,6 +107,7 @@ dependencies = [
  "id3",
  "lazy_static",
  "m3u",
+ "pls",
  "regex",
  "reqwest",
  "serde",
@@ -1930,6 +1931,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05da548ad6865900e60eaba7f589cc0783590a92e940c26953ff81ddbab2d677"
 
 [[package]]
+name = "pls"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fa4b7fc7e288a7e43658f494dda9b9ee01cbcfc4a99931e90191cccbc5f2b45"
+dependencies = [
+ "rust-ini",
+]
+
+[[package]]
 name = "png"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2211,6 +2221,12 @@ dependencies = [
  "constant_time_eq",
  "crossbeam-utils",
 ]
+
+[[package]]
+name = "rust-ini"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a654c5bda722c699be6b0fe4c0d90de218928da5b724c3e467fc48865c37263"
 
 [[package]]
 name = "rustc-hash"
