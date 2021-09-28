@@ -14,20 +14,24 @@ pub enum Language {
 pub enum PlaylistFormat {
     /// MP3 url format
     M3U,
+    /// PLS multimedia playlist format
+    PLS,
 }
 
 impl PlaylistFormat {
-    pub const ALL: [PlaylistFormat; 1] = [Self::M3U];
+    pub const ALL: [PlaylistFormat; 2] = [Self::M3U, Self::PLS];
 
     pub fn value(&self) -> &str {
         match self {
             Self::M3U => "m3u",
+            Self::PLS => "pls",
         }
     }
 
     pub fn description(&self) -> &str {
         match self {
             Self::M3U => "(MP3 url)",
+            Self::PLS => "(PLS multimedia playlist)",
         }
     }
 }
@@ -58,14 +62,15 @@ pub struct UserSettings {
 
     pub modify_tags: bool,
 
-    pub cover_art_file_name_format: String,
-
+    // playlist settings
     pub create_playlist: bool,
     pub playlist_format: PlaylistFormat,
     pub playlist_file_name_format: String,
 
     pub retrieve_files_size: bool,
 
+    // Cover Art
+    pub cover_art_file_name_format: String,
     pub save_cover_art_in_folder: bool,
     pub save_cover_art_in_tags: bool,
 
