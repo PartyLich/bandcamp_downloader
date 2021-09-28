@@ -3,6 +3,7 @@ use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::core::tag::EditAction;
 use crate::{helper, Result};
 
 /// UI localization option
@@ -69,8 +70,25 @@ pub struct UserSettings {
     /// Format for audio file names
     pub file_name_format: String,
 
+    // id3 tagging
     /// Modify id3 tags for downloaded tracks
     pub modify_tags: bool,
+    /// Action to apply if modifying id3 Album Artist field
+    pub tag_album_artist: EditAction,
+    /// Action to apply if modifying id3 Album Title field
+    pub tag_album_title: EditAction,
+    /// Action to apply if modifying id3 Artist field
+    pub tag_artist: EditAction,
+    /// Action to apply if modifying id3 Comments field
+    pub tag_comments: EditAction,
+    /// Action to apply if modifying id3 Lyrics field
+    pub tag_lyrics: EditAction,
+    /// Action to apply if modifying id3 Track Number field
+    pub tag_track_number: EditAction,
+    /// Action to apply if modifying id3 Track Title field
+    pub tag_track_title: EditAction,
+    /// Action to apply if modifying id3 Date fields
+    pub tag_year: EditAction,
 
     // playlist settings
     /// Create playlists for downloaded albums
@@ -128,6 +146,14 @@ impl Default for UserSettings {
             save_cover_art_in_tags: true,
 
             modify_tags: true,
+            tag_album_artist: EditAction::Modify,
+            tag_album_title: EditAction::Modify,
+            tag_artist: EditAction::Modify,
+            tag_comments: EditAction::Empty,
+            tag_lyrics: EditAction::Modify,
+            tag_track_number: EditAction::Modify,
+            tag_track_title: EditAction::Modify,
+            tag_year: EditAction::Modify,
 
             show_verbose_log: false,
         }
