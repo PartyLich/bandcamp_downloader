@@ -210,7 +210,7 @@ fn prepend_http(url: &str) -> String {
 }
 
 /// Fetch albums data from the URLs specified.
-pub async fn fetch_urls(
+async fn fetch_urls(
     urls: &str,
     discography: bool,
     save_dir: &str,
