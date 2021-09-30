@@ -29,5 +29,5 @@ features = ["stream"]
 
 [dependencies.tokio]
 # futures executor
-version = "0.2.21"
-features = ["rt-core", "macros", "fs", "io-util"]
+version = "1.5.0"
+features = ["rt", "macros", "fs", "io-util", "sync"]
