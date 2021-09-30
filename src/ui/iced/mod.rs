@@ -16,7 +16,7 @@ pub struct IcedUi {}
 
 impl ui::Ui for IcedUi {
     fn run(&self, user_settings: UserSettings) {
-        App::run(App::default_settings(AppFlags { user_settings }));
+        App::run(App::default_settings(AppFlags { user_settings })).unwrap();
     }
 }
 

@@ -129,7 +129,7 @@ impl Application for App {
         self.cur_view.title(&self.intl)
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(&mut self, message: Message, clipboard: &mut iced::Clipboard) -> Command<Message> {
         match message {
             Message::UrlsChanged(value) => {
                 self.set_url_input(value);
