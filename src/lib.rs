@@ -1,7 +1,6 @@
 //! Functions for downloading mp3s from bandcamp
-use std::{collections::HashSet, convert::TryFrom, path::Path, path::PathBuf, sync::Arc};
+use std::{collections::HashSet, path::Path, path::PathBuf, sync::Arc};
 
-use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
@@ -536,7 +535,6 @@ async fn download_album(
 #[cfg(test)]
 mod test {
     use super::*;
-    use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
     fn band_regex() {

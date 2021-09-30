@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use chrono::Datelike;
 use serde::{Deserialize, Serialize};
 
 use super::Album;
