@@ -45,7 +45,7 @@ impl button::StyleSheet for Button {
         match self {
             Self(Theme::Light) => button::Style {
                 background: Some(Background::Color(Theme::BUTTON_BG)),
-                border_radius: 5,
+                border_radius: 5.0,
                 ..button::Style::default()
             },
         }
@@ -67,7 +67,7 @@ impl progress_bar::StyleSheet for ProgressBar {
             Self(Theme::Light) => progress_bar::Style {
                 background: Background::Color(Theme::PROGRESS_BAR_BG),
                 bar: Background::Color(Theme::PROGRESS_BAR_FG),
-                border_radius: 10,
+                border_radius: 10.0,
             },
         }
     }

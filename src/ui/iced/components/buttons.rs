@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Create an iced Button with application styling
-pub fn button<'a, M>(state: &'a mut button::State, text: &str) -> Button<'a, M> {
+pub fn button<'a, M: Clone>(state: &'a mut button::State, text: &str) -> Button<'a, M> {
     let text_element = StyledText(text)
         .size(16)
         .horizontal_alignment(HorizontalAlignment::Center);
