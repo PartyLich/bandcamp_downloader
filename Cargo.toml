@@ -24,7 +24,7 @@ m3u = "~1.0.0"
 pls = "~0.2.2"
 
 [dependencies.reqwest]
-version = "0.10.6"
+version = "0.11.x"
 features = ["stream"]
 
 [dependencies.tokio]
