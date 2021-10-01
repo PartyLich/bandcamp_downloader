@@ -10,6 +10,7 @@ use crate::{
 use controls::controls;
 use event_log::event_log;
 use file_format_input::filename_format;
+use styled_pick_list::styled_pick_list;
 use styled_text as StyledText;
 use styled_text_input::save_dir;
 use url_section::{url_section, UrlState};
@@ -23,6 +24,7 @@ mod event_log;
 mod file_format_input;
 pub mod main_view;
 pub mod settings_view;
+mod styled_pick_list;
 mod styled_text_input;
 mod url_section;
 

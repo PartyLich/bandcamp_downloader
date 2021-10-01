@@ -1,6 +1,8 @@
 //! User interface module
 use std::hash::{Hash, Hasher};
 
+use serde::{Deserialize, Serialize};
+
 use crate::settings::UserSettings;
 
 pub use self::iced::IcedUi;
@@ -61,4 +63,32 @@ pub enum Message {
     Log(String, LogLevel),
     /// Update file download progress
     Progress(Progress),
+}
+
+/// UI theme (colorscheme)
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum Theme {
+    Light,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::Light
+    }
+}
+
+impl Theme {
+    pub const ALL: [Theme; 1] = [Theme::Light];
+
+    fn description(&self) -> &str {
+        match self {
+            Self::Light => "Light",
+        }
+    }
+}
+
+impl std::fmt::Display for Theme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }

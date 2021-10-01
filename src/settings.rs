@@ -4,13 +4,30 @@ use std::{fs, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::core::tag::EditAction;
+use crate::ui::Theme;
 use crate::{helper, Result};
 
 /// UI localization option
-#[derive(Debug, Copy, Clone)]
+#[derive(Deserialize, Debug, Copy, Clone, Eq, PartialEq, Serialize)]
 pub enum Language {
     /// English (US)
     EN,
+}
+
+impl Language {
+    pub const ALL: [Language; 1] = [Self::EN];
+
+    pub fn description(&self) -> &str {
+        match self {
+            Self::EN => "English (EN-US)",
+        }
+    }
+}
+
+impl std::fmt::Display for Language {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
 
 /// Available playlist export formats
@@ -110,6 +127,11 @@ pub struct UserSettings {
     pub save_cover_art_in_tags: bool,
 
     pub show_verbose_log: bool,
+
+    /// Localization language
+    pub language: Language,
+    /// UI Theme
+    pub theme: Theme,
 }
 
 impl Default for UserSettings {
@@ -156,6 +178,9 @@ impl Default for UserSettings {
             tag_year: EditAction::Modify,
 
             show_verbose_log: false,
+
+            language: Language::EN,
+            theme: Theme::default(),
         }
     }
 }
