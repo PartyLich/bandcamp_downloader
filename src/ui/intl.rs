@@ -41,6 +41,8 @@ pub struct IntlString {
     pub art_in_tags: String,
     /// General settings view title
     pub general: String,
+    /// Naming and Tags settings view title
+    pub naming_and_tags: String,
 }
 
 impl IntlString {

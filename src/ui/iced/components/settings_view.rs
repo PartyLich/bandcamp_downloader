@@ -45,8 +45,7 @@ impl Sections {
     fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
         // view select buttons
         let general = buttons::button(&mut self.general, &intl.general).width(Length::Fill);
-        // TODO: intl strings
-        let naming = buttons::button(&mut self.naming, "Naming and Tags").width(Length::Fill);
+        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags).width(Length::Fill);
 
         Container::new(
             Column::new()

@@ -16,5 +16,6 @@
   "urls_placeholder": "Enter a BandCamp url, press return to add",
   "delete_button":"Delete",
   "filename_format": "Filename format",
-  "general": "General"
+  "general": "General",
+  "naming_and_tags": "Naming and Tags"
 }
