@@ -39,6 +39,8 @@ pub struct IntlString {
     pub art_in_folder: String,
     /// Cover art in tags toggle label
     pub art_in_tags: String,
+    /// General settings view title
+    pub general: String,
 }
 
 impl IntlString {
