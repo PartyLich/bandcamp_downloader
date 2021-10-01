@@ -223,6 +223,9 @@ impl Application for App {
             Message::Settings(message) => {
                 self.ui_state.settings.update(message);
             }
+            Message::LanguageChanged(language) => {
+                // println!("Language selected: {}", language);
+            }
         }
         Command::none()
     }

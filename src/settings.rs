@@ -7,7 +7,7 @@ use crate::core::tag::EditAction;
 use crate::{helper, Result};
 
 /// UI localization option
-#[derive(Deserialize, Debug, Copy, Clone, Serialize)]
+#[derive(Deserialize, Debug, Copy, Clone, Eq, PartialEq, Serialize)]
 pub enum Language {
     /// English (US)
     EN,

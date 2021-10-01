@@ -43,6 +43,8 @@ pub struct IntlString {
     pub general: String,
     /// Naming and Tags settings view title
     pub naming_and_tags: String,
+    // Language label
+    pub language: String,
 }
 
 impl IntlString {

@@ -1,37 +1,60 @@
 //! General settings view
-use iced::{Column, Element, Row, Space};
+use iced::{pick_list, Align, Column, Container, Element, Length, Row};
 
-use super::Message;
-use crate::settings::Language;
-use crate::settings::UserSettings;
-use crate::ui::{iced::components, IntlString};
+use crate::settings::{Language, UserSettings};
+use crate::ui::{
+    iced::{components, style::Theme, Message},
+    IntlString,
+};
 
 #[derive(Debug)]
 pub struct State {
+    language_list: pick_list::State<Language>,
     selected_language: Language,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
-            selected_language: Language::EN,
+            language_list: Default::default(),
+            selected_language: UserSettings::default().language,
         }
     }
 }
 
 impl State {
     pub fn view(&mut self, _settings: &UserSettings, intl: &IntlString) -> Element<Message> {
-        Column::new()
-            .push(language_picker(intl))
-            .push(Space::with_height(300.into()))
+        let content = Column::new().spacing(5).push(language_picker(
+            &mut self.language_list,
+            &self.selected_language,
+            intl,
+        ));
+
+        Container::new(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
             .into()
     }
 }
 
-fn language_picker<'a>(intl: &IntlString) -> Element<'a, Message> {
-    // TODO: from intl
-    let label = format!("{}:", "Language");
-    let label = components::StyledText(label);
+fn language_picker<'a>(
+    pick_list_state: &'a mut pick_list::State<Language>,
+    selected_language: &Language,
+    intl: &IntlString,
+) -> Element<'a, Message> {
+    let label = components::StyledText(format!("{}:", &intl.language));
 
-    Row::new().spacing(5).push(label).into()
+    let pick_list = components::styled_pick_list(
+        pick_list_state,
+        &Language::ALL[..],
+        Some(*selected_language),
+        Message::LanguageChanged,
+    );
+
+    Row::new()
+        .spacing(5)
+        .align_items(Align::Center)
+        .push(label)
+        .push(pick_list)
+        .into()
 }

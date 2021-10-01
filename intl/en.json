@@ -17,5 +17,6 @@
   "delete_button":"Delete",
   "filename_format": "Filename format",
   "general": "General",
-  "naming_and_tags": "Naming and Tags"
+  "naming_and_tags": "Naming and Tags",
+  "language": "Language"
 }

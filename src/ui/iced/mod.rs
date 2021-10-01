@@ -48,6 +48,7 @@ pub enum Message {
     SettingsChanged(SettingType),
     SettingsSaved,
     Settings(settings_view::SettingsMessage),
+    LanguageChanged(crate::settings::Language),
 }
 
 impl From<settings_view::SettingsMessage> for Message {
