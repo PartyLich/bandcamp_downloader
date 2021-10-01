@@ -1,19 +1,9 @@
 use iced::{button, progress_bar, Background, Color};
 
-#[derive(Debug, PartialEq)]
-pub enum Theme {
-    Light,
-}
-
-impl Default for Theme {
-    fn default() -> Self {
-        Theme::Light
-    }
-}
+pub use crate::ui::Theme;
 
 const MAX: f32 = 255.0;
 impl Theme {
-    pub const ALL: [Theme; 1] = [Theme::Light];
     const BUTTON_BG: Color = Color::from_rgb(221.0 / MAX, 221.0 / MAX, 221.0 / MAX);
     const PROGRESS_BAR_BG: Color = Color::from_rgb(230.0 / MAX, 230.0 / MAX, 230.0 / MAX);
     const PROGRESS_BAR_FG: Color = Color::from_rgb(6.0 / MAX, 176.0 / MAX, 37.0 / MAX);

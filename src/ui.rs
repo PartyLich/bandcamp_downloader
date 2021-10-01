@@ -62,3 +62,19 @@ pub enum Message {
     /// Update file download progress
     Progress(Progress),
 }
+
+/// UI theme (colorscheme)
+#[derive(Debug, PartialEq)]
+pub enum Theme {
+    Light,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::Light
+    }
+}
+
+impl Theme {
+    pub const ALL: [Theme; 1] = [Theme::Light];
+}
