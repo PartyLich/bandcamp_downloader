@@ -1,6 +1,8 @@
 //! User interface module
 use std::hash::{Hash, Hasher};
 
+use serde::{Deserialize, Serialize};
+
 use crate::settings::UserSettings;
 
 pub use self::iced::IcedUi;
@@ -64,7 +66,7 @@ pub enum Message {
 }
 
 /// UI theme (colorscheme)
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub enum Theme {
     Light,
 }

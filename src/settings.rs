@@ -4,6 +4,7 @@ use std::{fs, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::core::tag::EditAction;
+use crate::ui::Theme;
 use crate::{helper, Result};
 
 /// UI localization option
@@ -129,6 +130,8 @@ pub struct UserSettings {
 
     /// Localization language
     pub language: Language,
+    /// UI Theme
+    pub theme: Theme,
 }
 
 impl Default for UserSettings {
@@ -177,6 +180,7 @@ impl Default for UserSettings {
             show_verbose_log: false,
 
             language: Language::EN,
+            theme: Theme::default(),
         }
     }
 }
