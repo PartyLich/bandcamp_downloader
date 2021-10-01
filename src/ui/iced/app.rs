@@ -220,6 +220,9 @@ impl Application for App {
             }
             Message::SetSaveDir => {}
             Message::SettingsChanged(..) => {}
+            Message::Settings(message) => {
+                self.ui_state.settings.update(message);
+            }
         }
         Command::none()
     }

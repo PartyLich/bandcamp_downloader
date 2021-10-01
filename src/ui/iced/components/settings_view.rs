@@ -9,6 +9,12 @@ use crate::ui::{
 mod general;
 mod naming;
 
+#[derive(Debug, Clone)]
+pub enum SettingsMessage {
+    General,
+    Naming,
+}
+
 /// Renderable views for Settings sections
 #[derive(Debug)]
 pub enum View {
@@ -44,8 +50,12 @@ struct Sections {
 impl Sections {
     fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
         // view select buttons
-        let general = buttons::button(&mut self.general, &intl.general).width(Length::Fill);
-        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags).width(Length::Fill);
+        let general = buttons::button(&mut self.general, &intl.general)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::General.into());
+        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::Naming.into());
 
         Container::new(
             Column::new()
@@ -106,5 +116,12 @@ impl State {
             .center_y()
             .padding(10)
             .into()
+    }
+
+    pub fn update(&mut self, message: SettingsMessage) {
+        match message {
+            SettingsMessage::General => self.current_view = View::General(Default::default()),
+            SettingsMessage::Naming => self.current_view = View::Naming(Default::default()),
+        }
     }
 }
