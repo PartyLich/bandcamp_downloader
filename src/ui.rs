@@ -66,7 +66,7 @@ pub enum Message {
 }
 
 /// UI theme (colorscheme)
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum Theme {
     Light,
 }

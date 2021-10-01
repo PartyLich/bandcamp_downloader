@@ -45,6 +45,8 @@ pub struct IntlString {
     pub naming_and_tags: String,
     // Language label
     pub language: String,
+    // Theme label
+    pub theme: String,
 }
 
 impl IntlString {

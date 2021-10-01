@@ -226,6 +226,9 @@ impl Application for App {
             Message::LanguageChanged(language) => {
                 // println!("Language selected: {}", language);
             }
+            Message::ThemeChanged(theme) => {
+                // println!("theme selected: {}", theme);
+            }
         }
         Command::none()
     }
