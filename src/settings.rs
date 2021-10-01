@@ -15,6 +15,18 @@ pub enum Language {
 
 impl Language {
     pub const ALL: [Language; 1] = [Self::EN];
+
+    pub fn description(&self) -> &str {
+        match self {
+            Self::EN => "English (EN-US)",
+        }
+    }
+}
+
+impl std::fmt::Display for Language {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
 
 /// Available playlist export formats
