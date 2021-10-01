@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use chrono::Datelike;
 use serde::{Deserialize, Serialize};
 
 use super::Album;
@@ -55,12 +54,7 @@ impl Track {
     /// replacing the placeholders strings with their corresponding values.
     /// The returned file name DOES contain the extension.
     fn parse_track_filename(&self, filename_format: &str, album: &Album) -> String {
-        let file_name = filename_format
-            .replace("{year}", &album.release_date.year().to_string())
-            .replace("{month}", &format!("{:02}", album.release_date.month()))
-            .replace("{day}", &format!("{:02}", album.release_date.day()))
-            .replace("{album}", &album.title)
-            .replace("{artist}", &album.artist)
+        let file_name = helper::parse_filename(filename_format, album)
             .replace("{title}", &self.title)
             .replace("{tracknum}", &format!("{:02}", self.number));
 

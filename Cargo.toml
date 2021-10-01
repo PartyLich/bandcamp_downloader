@@ -1,6 +1,6 @@
 [package]
 name = "bandcamp_downloader"
-version = "0.1.0"
+version = "0.2.0"
 license = "AGPL-3.0-only"
 publish = false
 authors = ["Arthur E. Jones <PartyLich@gmail.com>"]
@@ -15,17 +15,19 @@ futures = "0.3.5"
 regex = "1.3.9"
 lazy_static = "1.4.0"
 chrono = { version = "0.4.11", features = ["serde"] }
-iced = {version= "0.1.1", features = ["image", "debug", "tokio"] }
-iced_native = "0.2.2"
-iced_futures = "0.1.2"
+iced = { version = "0.3.x", features = ["image", "debug", "tokio"] }
+iced_native = "0.4.x"
+iced_futures = "0.3.x"
 dirs = "3.0.1"
-id3 = "0.5.1"
+id3 = "0.6.x"
+m3u = "~1.0.0"
+pls = "~0.2.2"
 
 [dependencies.reqwest]
-version = "0.10.6"
+version = "0.11.x"
 features = ["stream"]
 
 [dependencies.tokio]
 # futures executor
-version = "0.2.21"
-features = ["rt-core", "macros", "fs", "io-util"]
+version = "1.5.0"
+features = ["rt", "macros", "fs", "io-util", "sync"]

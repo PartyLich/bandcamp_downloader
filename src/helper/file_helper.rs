@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
+use chrono::Datelike;
 use regex::Regex;
+
+use crate::model::Album;
 
 #[cfg(debug_assertions)]
 pub fn get_root_dir() -> PathBuf {
@@ -38,6 +41,20 @@ pub fn sanitize_file_name(file_name: &str) -> String {
 
     // Remove trailing whitespace
     file_name.trim_end().to_string()
+}
+
+/// Returns the file name to be used for the item from the provided file name format, by
+/// replacing the placeholders strings with their corresponding values.
+/// The returned file name DOES NOT contain the extension.
+pub fn parse_filename(filename_format: &str, album: &Album) -> String {
+    let file_name = filename_format
+        .replace("{year}", &album.release_date.year().to_string())
+        .replace("{month}", &format!("{:02}", album.release_date.month()))
+        .replace("{day}", &format!("{:02}", album.release_date.day()))
+        .replace("{album}", &album.title)
+        .replace("{artist}", &album.artist);
+
+    sanitize_file_name(&file_name)
 }
 
 #[cfg(test)]

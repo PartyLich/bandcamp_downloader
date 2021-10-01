@@ -2,6 +2,7 @@ use std::fmt;
 
 use serde_json::error::Category;
 
+/// Domain specific Error type
 #[derive(Debug, Clone)]
 pub enum Error {
     Api,

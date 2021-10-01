@@ -3,6 +3,7 @@ use iced::Application;
 
 use crate::{settings::UserSettings, ui};
 use app::{App, AppFlags};
+use components::settings_view;
 use components::EntryMessage;
 
 mod app;
@@ -16,7 +17,7 @@ pub struct IcedUi {}
 
 impl ui::Ui for IcedUi {
     fn run(&self, user_settings: UserSettings) {
-        App::run(App::default_settings(AppFlags { user_settings }));
+        App::run(App::default_settings(AppFlags { user_settings })).unwrap();
     }
 }
 
@@ -46,4 +47,13 @@ pub enum Message {
     Url(usize, EntryMessage),
     SettingsChanged(SettingType),
     SettingsSaved,
+    Settings(settings_view::SettingsMessage),
+    LanguageChanged(crate::settings::Language),
+    ThemeChanged(style::Theme),
+}
+
+impl From<settings_view::SettingsMessage> for Message {
+    fn from(message: settings_view::SettingsMessage) -> Self {
+        Self::Settings(message)
+    }
 }

@@ -68,7 +68,7 @@ impl App {
         let download_service = DownloadService::new();
         let ui_state = UiState {
             main: main_view::State::new(),
-            settings: settings_view::State::new(),
+            settings: settings_view::State::default(),
         };
 
         Self {
@@ -129,7 +129,7 @@ impl Application for App {
         self.cur_view.title(&self.intl)
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    fn update(&mut self, message: Message, clipboard: &mut iced::Clipboard) -> Command<Message> {
         match message {
             Message::UrlsChanged(value) => {
                 self.set_url_input(value);
@@ -220,17 +220,25 @@ impl Application for App {
             }
             Message::SetSaveDir => {}
             Message::SettingsChanged(..) => {}
+            Message::Settings(message) => {
+                self.ui_state.settings.update(message);
+            }
+            Message::LanguageChanged(language) => {
+                // println!("Language selected: {}", language);
+            }
+            Message::ThemeChanged(theme) => {
+                // println!("theme selected: {}", theme);
+            }
         }
         Command::none()
     }
 
     fn view(&mut self) -> Element<Message> {
         let settings = self.user_settings.lock().unwrap();
+
         match self.cur_view {
             View::Main => main_view::view(&mut self.ui_state.main, &settings, &self.intl),
-            View::Settings => {
-                settings_view::view(&mut self.ui_state.settings, &settings, &self.intl)
-            }
+            View::Settings => self.ui_state.settings.view(&settings, &self.intl),
         }
     }
 

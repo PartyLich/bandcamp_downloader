@@ -1,13 +1,15 @@
 //! Functions for downloading mp3s from bandcamp
-use std::{collections::HashSet, convert::TryFrom, path::Path, sync::Arc};
+use std::{collections::HashSet, path::Path, path::PathBuf, sync::Arc};
 
-use chrono::Datelike;
 use futures::channel::mpsc;
 use futures::future::join_all;
 use regex::Regex;
 use tokio::{fs, io::AsyncWriteExt};
 
-use error::Error;
+use crate::{
+    core::{playlist, tag},
+    error::Error,
+};
 use model::{Album, Track};
 use settings::UserSettings;
 use ui::{LogLevel, Message, Progress};
@@ -22,7 +24,7 @@ mod model;
 pub mod settings;
 pub mod ui;
 
-/// A `Result` alias where the `Err` case is `bandcamp_downloader::Error`.
+/// A [`std::Result`](std::result::Result) alias where the [`Err`] case is `bandcamp_downloader::Error`.
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 lazy_static! {
@@ -209,8 +211,8 @@ fn prepend_http(url: &str) -> String {
     }
 }
 
-/// Fetch albums data from the URLs specified when creating this DownloadManager.
-pub async fn fetch_urls(
+/// Fetch albums data from the URLs specified.
+async fn fetch_urls(
     urls: &str,
     discography: bool,
     save_dir: &str,
@@ -237,6 +239,13 @@ pub async fn fetch_urls(
     }
 }
 
+/// Compare file size and return true if size on disk is within the provided threshold
+fn file_size_ok(allowed_difference: f64, size_on_disk: f64, new_file_size: f64) -> bool {
+    let margin = size_on_disk * allowed_difference;
+    println!("allowed diff {} margin: {}", allowed_difference, margin);
+    new_file_size > size_on_disk - margin && new_file_size < size_on_disk + margin
+}
+
 /// Downloads a track. Returns `Ok()` if the track has been correctly downloaded; Err otherwise.
 async fn download_track_stream(
     track: Track,
@@ -255,26 +264,10 @@ async fn download_track_stream(
         ))
         .expect("Failed to send message");
 
-    if Path::new(&track.path).exists() {
-        let file_length = fs::metadata(&track.path)
-            .await
-            .unwrap_or_else(|_| panic!("Unable to stat file {}", track.path))
-            .len();
-
-        println!("file already exists {}. Size: {}", &track.path, file_length);
-        sender
-            .try_send(Message::Log(
-                format!("file already exists {}. Size: {}", &track.path, file_length),
-                LogLevel::Info,
-            ))
-            .expect("Failed to send message");
-        // TODO: redownload if size exceeds allowed difference
-        return Err(Error::Io(String::from("File already exists")));
-    }
-
     let mut tries = 0u32;
     while tries < max_tries {
         // TODO cancellation
+        // TODO reuse client?
         // Start download
         let response = reqwest::get(&track.mp3_url).await;
         if let Err(e) = response {
@@ -292,7 +285,31 @@ async fn download_track_stream(
         }
         let mut response = response.unwrap();
 
-        let dir = Path::new(&track.path).parent();
+        let total_size = response.content_length().unwrap_or(0);
+        let track_path = Path::new(&track.path);
+        if track_path.exists() {
+            let size_on_disk = fs::metadata(&track.path)
+                .await
+                .unwrap_or_else(|_| panic!("Unable to stat file {}", track.path))
+                .len();
+
+            if file_size_ok(
+                allowed_file_size_difference as f64,
+                size_on_disk as f64,
+                total_size as f64,
+            ) {
+                sender.try_send(Message::Log(
+                    format!(
+                        "Track already exists within allowed file size range: \"{:?}\" - Skipping download!",
+                        track_path.file_name().unwrap()),
+                        LogLevel::Info,
+                    ))
+                    .expect("Failed to send message");
+                return Err(Error::Io(String::from("File already exists")));
+            }
+        }
+
+        let dir = track_path.parent();
         if let Some(parent_dir) = dir {
             if !parent_dir.exists() {
                 sender
@@ -311,7 +328,6 @@ async fn download_track_stream(
         println!("file created");
 
         let mut downloaded = 0;
-        let total_size = response.content_length().unwrap_or(0);
         while let Some(chunk) = response.chunk().await? {
             destination.write_all(&chunk).await?;
 
@@ -336,19 +352,13 @@ async fn download_track_stream(
 
         println!(
             "Downloaded track \"{}\" ",
-            Path::new(&track.path)
-                .file_name()
-                .unwrap()
-                .to_string_lossy(),
+            track_path.file_name().unwrap().to_string_lossy(),
         );
         sender
             .try_send(Message::Log(
                 format!(
                     "Downloaded track \"{}\" ",
-                    Path::new(&track.path)
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy(),
+                    track_path.file_name().unwrap().to_string_lossy(),
                 ),
                 LogLevel::Info,
             ))
@@ -366,6 +376,7 @@ fn tag_track(
     track_index: usize,
     mut sender: mpsc::Sender<Message>,
     artwork: Option<id3::frame::Picture>,
+    settings: Arc<UserSettings>,
 ) -> Result<()> {
     let track = album
         .tracks
@@ -395,41 +406,20 @@ fn tag_track(
         ))
         .expect("Failed to send message");
 
-    tag.set_album(&album.title);
-    tag.set_artist(&album.artist);
-    tag.set_title(&track.title);
-    tag.set_track(track.number);
     tag.set_total_tracks(album.tracks.len() as u32);
-    if let Some(lyrics) = &track.lyrics {
-        tag.add_lyrics(id3::frame::Lyrics {
-            lang: String::default(),
-            description: String::default(),
-            text: lyrics.to_string(),
-        })
-    }
 
-    let year = album.release_date.year();
-    let month = u8::try_from(album.release_date.month()).ok();
-    let day = u8::try_from(album.release_date.day()).ok();
-    tag.set_date_released(id3::Timestamp {
-        year,
-        month,
-        day,
-        hour: None,
-        minute: None,
-        second: None,
-    });
-    tag.set_year(year);
+    tag::update_album_artist(&mut tag, &album.artist, settings.tag_album_artist);
+    tag::update_artist(&mut tag, &album.artist, settings.tag_artist);
+    tag::update_album_title(&mut tag, &album.title, settings.tag_album_title);
+    tag::update_album_date(&mut tag, &album.release_date, settings.tag_year);
+    tag::update_track_number(&mut tag, track.number, settings.tag_track_number);
+    tag::update_track_title(&mut tag, &track.title, settings.tag_track_title);
+    tag::update_track_lyrics(&mut tag, &track.lyrics, settings.tag_lyrics);
+    tag::update_comments(&mut tag, settings.tag_comments);
 
     if let Some(artwork) = artwork {
         tag.add_picture(artwork);
     }
-
-    tag.add_comment(id3::frame::Comment {
-        lang: "eng".to_string(),
-        description: "".to_string(),
-        text: "Support the artists you enjoy.".to_string(),
-    });
 
     tag.write_to_path(&track.path, id3::Version::Id3v24)
         .map_err(|e| Error::Io(e.description.to_string()))
@@ -454,7 +444,11 @@ async fn download_artwork(album: &Album) -> Result<id3::frame::Picture> {
 }
 
 /// Downloads an album, delivering status updates to a channel via the `sender`
-async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: Arc<UserSettings>) {
+async fn download_album(
+    album: Album,
+    mut sender: mpsc::Sender<Message>,
+    settings: Arc<UserSettings>,
+) {
     let UserSettings {
         allowed_file_size_difference,
         save_cover_art_in_folder,
@@ -495,33 +489,52 @@ async fn download_album(album: Album, sender: mpsc::Sender<Message>, settings: A
         .collect();
     join_all(download_tasks).await;
 
+    let album = Arc::new(album);
+
     // Tag tracks if they do not already have a tag
     if modify_tags {
         let mut tag_tasks = Vec::with_capacity(album.tracks.len());
-        let album = Arc::new(album);
         for i in 0..album.tracks.len() {
-            let album = Arc::clone(&album);
+            let album = album.clone();
             let sender = sender.clone();
+            let settings = settings.clone();
             let artwork = if save_cover_art_in_tags {
                 artwork.clone()
             } else {
                 None
             };
-            tag_tasks.push(tokio::spawn(
-                async move { tag_track(album, i, sender, artwork) },
-            ));
+
+            tag_tasks.push(tokio::spawn(async move {
+                tag_track(album, i, sender, artwork, settings)
+            }));
         }
         join_all(tag_tasks).await;
     }
 
     // TODO Save cover art in folder
-    // TODO Create playlist file
+    // Create playlist file
+    if settings.create_playlist {
+        let playlist_path = helper::parse_filename(&settings.playlist_file_name_format, &album);
+        let playlist_path: PathBuf = [&album.path, &playlist_path].iter().collect();
+        let res = playlist::write_playlist(settings.playlist_format, &album, playlist_path);
+        match res {
+            Err(_) => sender.try_send(Message::Log(
+                    format!("An error occured while writing playlist for {}. Make sure you have the rights to write files in the folder you chose", &album.title),
+                    LogLevel::Error,
+                    ))
+                .expect("Failed to send message"),
+            Ok(_) => sender.try_send(Message::Log(
+                    format!("Saved playlist for album \"{}\"", &album.title),
+                    LogLevel::Info,
+                    ))
+                .expect("Failed to send message"),
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
     fn band_regex() {

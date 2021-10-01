@@ -1,78 +1,127 @@
-use iced::{button, text_input, Column, Container, Element, Length, Row, Space};
+use iced::{button, Column, Container, Element, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
-    iced::{
-        components::{self, buttons},
-        Message,
-    },
+    iced::{components::buttons, Message},
     IntlString,
 };
 
-/// Settings view UI state
-#[derive(Debug, Default)]
-pub struct State {
-    pub save: button::State,
-    pub cancel: button::State,
-    pub filename_input: text_input::State,
+mod general;
+mod naming;
+
+#[derive(Debug, Clone)]
+pub enum SettingsMessage {
+    General,
+    Naming,
 }
 
-impl State {
-    pub fn new() -> Self {
-        Self {
-            save: button::State::new(),
-            cancel: button::State::new(),
-            filename_input: text_input::State::new(),
+/// Renderable views for Settings sections
+#[derive(Debug)]
+pub enum View {
+    General(general::State),
+    Naming(naming::State),
+}
+
+impl Default for View {
+    fn default() -> Self {
+        Self::General(Default::default())
+    }
+}
+
+impl View {
+    fn view<'a>(
+        &'a mut self,
+        settings: &UserSettings,
+        intl: &'a IntlString,
+    ) -> Element<'a, Message> {
+        match self {
+            Self::Naming(state) => state.view(settings, intl),
+            Self::General(state) => state.view(settings, intl),
         }
     }
 }
 
-pub fn view<'a>(
-    state: &'a mut State,
-    settings: &UserSettings,
-    intl: &'a IntlString,
-) -> Element<'a, Message> {
-    let filename_format =
-        components::filename_format(&mut state.filename_input, &settings.file_name_format, intl);
-    let modify_tags_checkbox = components::checkbox_row(
-        settings.modify_tags,
-        &intl.modify_tags_checkbox,
-        Message::ModifyTagsToggled,
-    );
-    let art_in_folder_checkbox = components::checkbox_row(
-        settings.save_cover_art_in_folder,
-        &intl.art_in_folder,
-        Message::ArtInFolderToggled,
-    );
-    let art_in_tags_checkbox = components::checkbox_row(
-        settings.save_cover_art_in_tags,
-        &intl.art_in_tags,
-        Message::ArtInTagsToggled,
-    );
-    let controls = Row::new()
-        .push(Space::with_width(Length::Fill))
-        .push(buttons::cancel_settings(&mut state.cancel, intl))
-        .push(Space::with_width(Length::Units(10)))
-        .push(buttons::save_settings(&mut state.save, intl));
+#[derive(Debug, Default)]
+struct Sections {
+    general: button::State,
+    naming: button::State,
+}
 
-    let settings = Column::new()
-        .spacing(5)
+impl Sections {
+    fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
+        // view select buttons
+        let general = buttons::button(&mut self.general, &intl.general)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::General.into());
+        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::Naming.into());
+
+        Container::new(
+            Column::new()
+                .spacing(5)
+                .padding(4)
+                .push(general)
+                .push(naming)
+                .height(Length::Fill),
+        )
         .height(Length::Fill)
-        .width(Length::FillPortion(2))
-        .push(filename_format)
-        .push(modify_tags_checkbox)
-        .push(art_in_folder_checkbox)
-        .push(art_in_tags_checkbox)
-        .push(Space::with_height(Length::Fill))
-        .push(controls);
+        .width(Length::FillPortion(1))
+    }
+}
 
-    let content = Row::new().push(settings);
+/// Settings view UI state
+#[derive(Debug, Default)]
+pub struct State {
+    pub current_view: View,
+    save: button::State,
+    cancel: button::State,
+    sections: Sections,
+}
 
-    Container::new(content)
-        .width(Length::Units(815))
-        .height(Length::Units(440))
-        .center_x()
-        .center_y()
-        .padding(10)
-        .into()
+impl State {
+    // render function
+    pub fn view<'a>(
+        &'a mut self,
+        settings: &UserSettings,
+        intl: &'a IntlString,
+    ) -> Element<'a, Message> {
+        let sections = self.sections.view(intl);
+
+        let controls = Row::new()
+            .spacing(5)
+            .push(Space::with_width(Length::Fill))
+            .push(buttons::cancel_settings(&mut self.cancel, intl))
+            .push(buttons::save_settings(&mut self.save, intl));
+
+        let current_view = self.current_view.view(settings, intl);
+        let current_view = Column::new()
+            .padding(4)
+            .spacing(5)
+            .height(Length::Fill)
+            .width(Length::FillPortion(3))
+            .push(current_view)
+            .push(controls);
+
+        let content = Row::new()
+            .height(Length::Fill)
+            .push(sections)
+            .push(Space::with_width(Length::Units(16)))
+            .push(current_view);
+
+        Container::new(content)
+            .width(Length::Units(815))
+            .height(Length::Units(440))
+            .center_x()
+            .center_y()
+            .padding(10)
+            .into()
+    }
+
+    pub fn update(&mut self, message: SettingsMessage) {
+        match message {
+            SettingsMessage::General => self.current_view = View::General(Default::default()),
+            SettingsMessage::Naming => self.current_view = View::Naming(Default::default()),
+        }
+    }
 }
