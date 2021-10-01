@@ -7,7 +7,7 @@ use crate::core::tag::EditAction;
 use crate::{helper, Result};
 
 /// UI localization option
-#[derive(Debug, Copy, Clone)]
+#[derive(Deserialize, Debug, Copy, Clone, Serialize)]
 pub enum Language {
     /// English (US)
     EN,
@@ -126,6 +126,9 @@ pub struct UserSettings {
     pub save_cover_art_in_tags: bool,
 
     pub show_verbose_log: bool,
+
+    /// Localization language
+    pub language: Language,
 }
 
 impl Default for UserSettings {
@@ -172,6 +175,8 @@ impl Default for UserSettings {
             tag_year: EditAction::Modify,
 
             show_verbose_log: false,
+
+            language: Language::EN,
         }
     }
 }
