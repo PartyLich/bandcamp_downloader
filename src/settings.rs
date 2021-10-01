@@ -13,6 +13,10 @@ pub enum Language {
     EN,
 }
 
+impl Language {
+    pub const ALL: [Language; 1] = [Self::EN];
+}
+
 /// Available playlist export formats
 #[derive(Debug, Deserialize, Copy, Clone, Serialize)]
 pub enum PlaylistFormat {
