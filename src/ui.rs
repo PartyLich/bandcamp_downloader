@@ -79,4 +79,16 @@ impl Default for Theme {
 
 impl Theme {
     pub const ALL: [Theme; 1] = [Theme::Light];
+
+    fn description(&self) -> &str {
+        match self {
+            Self::Light => "Light",
+        }
+    }
+}
+
+impl std::fmt::Display for Theme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
