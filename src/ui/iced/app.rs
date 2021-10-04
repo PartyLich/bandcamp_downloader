@@ -218,6 +218,9 @@ impl Application for App {
                 SettingType::Discography(value) => {
                     update_setting!(download_artist_discography, value)
                 }
+                SettingType::ArtFilename(value) => {
+                    update_setting!(cover_art_file_name_format, value)
+                }
                 SettingType::ArtInFolder(value) => {
                     update_setting!(save_cover_art_in_folder, value)
                 }

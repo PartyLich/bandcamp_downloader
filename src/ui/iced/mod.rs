@@ -30,6 +30,8 @@ pub enum SettingType {
     SaveDir(String),
     FilenameFormat(String),
     Discography(bool),
+
+    ArtFilename(String),
     ArtInFolder(bool),
     ArtInTags(bool),
 

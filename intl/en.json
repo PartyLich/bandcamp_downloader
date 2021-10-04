@@ -5,6 +5,7 @@
   "discography_checkbox": "Download artist discography",
   "modify_tags_checkbox": "Modify track tags (id3)",
   "cover_art": "Cover art",
+  "art_input_placeholder": "Enter enter a filename with placeholders",
   "art_in_folder": "Save album artwork in folder",
   "art_in_tags": "Save album artwork in tags",
   "log_placeholder": "Ready to rock",
