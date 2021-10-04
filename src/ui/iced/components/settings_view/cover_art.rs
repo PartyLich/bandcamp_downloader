@@ -3,16 +3,9 @@ use iced::{text_input, Align, Column, Element, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
-    iced::{components, components::labeled_input, Message, SettingType},
+    iced::{components, components::indent, components::labeled_input, Message, SettingType},
     IntlString,
 };
-
-/// Indented row
-fn indent<'a>() -> Row<'a, Message> {
-    Row::new()
-        .align_items(Align::Center)
-        .push(Space::with_width(Length::Units(30)))
-}
 
 labeled_input!(
     #[doc = "Cover art filename format input"]
@@ -30,6 +23,7 @@ pub struct State {
 
 impl State {
     pub fn view(&mut self, settings: &UserSettings, intl: &IntlString) -> Element<Message> {
+        const INDENT: u16 = 30;
         macro_rules! checkbox {
             ($setting: ident, $intl_field: ident, $message: path) => {
                 components::checkbox_row(settings.$setting, &intl.$intl_field, |a| {
@@ -56,7 +50,7 @@ impl State {
             .height(Length::Fill)
             .width(Length::FillPortion(3))
             .push(art_in_folder_checkbox)
-            .push(indent().push(filename_format))
+            .push(indent(INDENT).push(filename_format))
             .push(art_in_tags_checkbox)
             .push(Space::with_height(Length::Fill))
             .into()

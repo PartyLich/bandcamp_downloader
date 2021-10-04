@@ -10,6 +10,7 @@ use crate::{
 use controls::controls;
 use event_log::event_log;
 use file_format_input::filename_format;
+use indent_row::indent;
 use styled_pick_list::styled_pick_list;
 use styled_text as StyledText;
 use styled_text_input::labeled_input;
@@ -65,4 +66,17 @@ pub fn download_progress_bar(files: &HashSet<Progress>) -> ProgressBar {
     ProgressBar::new(0.0..=100.0, download_progress)
         .height(Length::Units(18))
         .style(style::Theme::Light)
+}
+
+mod indent_row {
+    use iced::{Align, Length, Row, Space};
+
+    use crate::ui::iced::Message;
+
+    /// Indented row
+    pub fn indent<'a>(len: u16) -> Row<'a, Message> {
+        Row::new()
+            .align_items(Align::Center)
+            .push(Space::with_width(Length::Units(len)))
+    }
 }
