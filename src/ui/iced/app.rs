@@ -129,35 +129,27 @@ impl Application for App {
         self.cur_view.title(&self.intl)
     }
 
-    fn update(&mut self, message: Message, clipboard: &mut iced::Clipboard) -> Command<Message> {
+    fn update(&mut self, message: Message, _clipboard: &mut iced::Clipboard) -> Command<Message> {
+        /// update the specified field of user_settings with the provided value
+        macro_rules! update_setting {
+            ($field: ident, $value: expr) => {{
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.$field = $value.into();
+            }};
+        }
+
         match message {
             Message::UrlsChanged(value) => {
                 self.set_url_input(value);
             }
-            Message::SaveDirChanged(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.downloads_path = value.into();
-            }
-            Message::FilenameFormatChanged(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.file_name_format = value;
-            }
+            Message::SaveDirChanged(value) => update_setting!(downloads_path, value),
+            Message::FilenameFormatChanged(value) => update_setting!(file_name_format, value),
             Message::DiscographyToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.download_artist_discography = value;
+                update_setting!(download_artist_discography, value)
             }
-            Message::ArtInFolderToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.save_cover_art_in_folder = value;
-            }
-            Message::ArtInTagsToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.save_cover_art_in_tags = value;
-            }
-            Message::ModifyTagsToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.modify_tags = value;
-            }
+            Message::ArtInFolderToggled(value) => update_setting!(save_cover_art_in_folder, value),
+            Message::ArtInTagsToggled(value) => update_setting!(save_cover_art_in_tags, value),
+            Message::ModifyTagsToggled(value) => update_setting!(modify_tags, value),
             Message::AddUrl => {
                 if self.ui_state.main.url_state.input_value.is_empty() {
                     return Command::none();
