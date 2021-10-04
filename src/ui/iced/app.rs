@@ -239,6 +239,9 @@ impl Application for App {
                 SettingType::PlaylistFilename(value) => {
                     update_setting!(playlist_file_name_format, value)
                 }
+                SettingType::DownloadSerial(value) => {
+                    update_setting!(download_one_album_at_a_time, value)
+                }
             },
         }
         Command::none()
