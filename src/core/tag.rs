@@ -5,7 +5,7 @@ use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 
 /// id3 tag modification modes
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum EditAction {
     /// Save or update the field in the tag
     Modify,
