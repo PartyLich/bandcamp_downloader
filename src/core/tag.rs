@@ -15,6 +15,10 @@ pub enum EditAction {
     Skip,
 }
 
+impl EditAction {
+    /// list of all enum variants
+    pub const ALL: [EditAction; 3] = [Self::Modify, Self::Empty, Self::Skip];
+}
 /// Updates the [`id3::Tag`] in place with the specified album artist based on the specified [`EditAction`].
 pub fn update_album_artist(tag: &mut id3::Tag, album_artist: &str, edit_action: EditAction) {
     match edit_action {
