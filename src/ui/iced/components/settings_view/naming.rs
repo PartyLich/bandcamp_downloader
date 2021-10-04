@@ -1,5 +1,5 @@
 //! Naming and Tag settings view
-use iced::{text_input, Align, Column, Element, Length, PickList, Row, Space};
+use iced::{pick_list, text_input, Align, Column, Element, Length, PickList, Row, Space};
 
 use crate::core::EditAction;
 use crate::settings::UserSettings;
@@ -8,10 +8,18 @@ use crate::ui::{
     IntlString,
 };
 
-// Naming and Tag settings view state
+/// Naming and Tag settings view state
 #[derive(Debug, Default)]
 pub struct State {
-    pub filename_input: text_input::State,
+    filename_input: text_input::State,
+    tag_album_artist: pick_list::State<EditAction>,
+    tag_album_title: pick_list::State<EditAction>,
+    tag_artist: pick_list::State<EditAction>,
+    tag_comments: pick_list::State<EditAction>,
+    tag_lyrics: pick_list::State<EditAction>,
+    tag_track_number: pick_list::State<EditAction>,
+    tag_track_title: pick_list::State<EditAction>,
+    tag_date: pick_list::State<EditAction>,
 }
 
 impl State {
