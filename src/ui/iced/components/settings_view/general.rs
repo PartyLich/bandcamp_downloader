@@ -3,7 +3,7 @@ use iced::{pick_list, Align, Column, Container, Element, Length, Row};
 
 use crate::settings::{Language, UserSettings};
 use crate::ui::{
-    iced::{components, style::Theme, Message},
+    iced::{components, style::Theme, Message, SettingType},
     IntlString,
 };
 
@@ -51,7 +51,7 @@ fn language_picker<'a>(
         pick_list_state,
         &Language::ALL[..],
         Some(*selected_language),
-        Message::LanguageChanged,
+        |a| SettingType::Language(a).into(),
     );
 
     Row::new()
@@ -73,7 +73,7 @@ fn theme_picker<'a>(
         pick_list_state,
         &Theme::ALL[..],
         Some(*selected_theme),
-        Message::ThemeChanged,
+        |a| SettingType::Theme(a).into(),
     );
 
     Row::new()

@@ -142,14 +142,6 @@ impl Application for App {
             Message::UrlsChanged(value) => {
                 self.set_url_input(value);
             }
-            Message::SaveDirChanged(value) => update_setting!(downloads_path, value),
-            Message::FilenameFormatChanged(value) => update_setting!(file_name_format, value),
-            Message::DiscographyToggled(value) => {
-                update_setting!(download_artist_discography, value)
-            }
-            Message::ArtInFolderToggled(value) => update_setting!(save_cover_art_in_folder, value),
-            Message::ArtInTagsToggled(value) => update_setting!(save_cover_art_in_tags, value),
-            Message::ModifyTagsToggled(value) => update_setting!(modify_tags, value),
             Message::AddUrl => {
                 if self.ui_state.main.url_state.input_value.is_empty() {
                     return Command::none();
@@ -213,12 +205,6 @@ impl Application for App {
             Message::SetSaveDir => {}
             Message::Settings(message) => {
                 self.ui_state.settings.update(message);
-            }
-            Message::LanguageChanged(language) => {
-                // println!("Language selected: {}", language);
-            }
-            Message::ThemeChanged(theme) => {
-                // println!("theme selected: {}", theme);
             }
             Message::SettingsChanged(setting) => match setting {
                 SettingType::Language(language) => {

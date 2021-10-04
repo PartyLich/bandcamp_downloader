@@ -26,21 +26,19 @@ impl State {
     pub fn view(&mut self, settings: &UserSettings, intl: &IntlString) -> Element<Message> {
         let filename_format =
             components::filename_format(&mut self.filename_input, &settings.file_name_format, intl);
-        let modify_tags_checkbox = components::checkbox_row(
-            settings.modify_tags,
-            &intl.modify_tags_checkbox,
-            Message::ModifyTagsToggled,
-        );
+        let modify_tags_checkbox =
+            components::checkbox_row(settings.modify_tags, &intl.modify_tags_checkbox, |a| {
+                SettingType::ModifyTags(a).into()
+            });
         let art_in_folder_checkbox = components::checkbox_row(
             settings.save_cover_art_in_folder,
             &intl.art_in_folder,
-            Message::ArtInFolderToggled,
+            |a| SettingType::ArtInFolder(a).into(),
         );
-        let art_in_tags_checkbox = components::checkbox_row(
-            settings.save_cover_art_in_tags,
-            &intl.art_in_tags,
-            Message::ArtInTagsToggled,
-        );
+        let art_in_tags_checkbox =
+            components::checkbox_row(settings.save_cover_art_in_tags, &intl.art_in_tags, |a| {
+                SettingType::ArtInTags(a).into()
+            });
 
         Column::new()
             .spacing(5)

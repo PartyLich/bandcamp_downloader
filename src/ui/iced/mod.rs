@@ -49,12 +49,6 @@ pub enum SettingType {
 pub enum Message {
     Domain(ui::Message),
     UrlsChanged(String),
-    SaveDirChanged(String),
-    FilenameFormatChanged(String),
-    DiscographyToggled(bool),
-    ModifyTagsToggled(bool),
-    ArtInFolderToggled(bool),
-    ArtInTagsToggled(bool),
     OpenSettings,
     OpenMain,
     AddUrl,
@@ -65,8 +59,6 @@ pub enum Message {
     SettingsChanged(SettingType),
     SettingsSaved,
     Settings(settings_view::SettingsMessage),
-    LanguageChanged(crate::settings::Language),
-    ThemeChanged(style::Theme),
 }
 
 impl From<settings_view::SettingsMessage> for Message {
