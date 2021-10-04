@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use iced::{Checkbox, Length, ProgressBar, Row, Text};
 
 use crate::{
-    ui::iced::{style, Message},
+    ui::iced::{style, Message, SettingType},
     ui::{IntlString, Progress},
 };
 
@@ -48,11 +48,9 @@ where
 
 /// Checkbox for toggling discography download option
 pub fn discography_checkbox<'a>(state: bool, intl: &IntlString) -> Row<'a, Message> {
-    checkbox_row(
-        state,
-        &intl.discography_checkbox,
-        Message::DiscographyToggled,
-    )
+    checkbox_row(state, &intl.discography_checkbox, |a| {
+        SettingType::Discography(a).into()
+    })
 }
 
 /// Creates a ProgressBar to display the completion percentage calculated from a set of Progress

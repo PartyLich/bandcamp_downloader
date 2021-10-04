@@ -6,7 +6,7 @@ use tokio::sync::Mutex;
 
 use super::{
     components::{main_view, settings_view, Entry, EntryMessage},
-    subscription, Message,
+    subscription, Message, SettingType,
 };
 use crate::{core::DownloadService, helper::log_info, settings::UserSettings, ui};
 
@@ -129,34 +129,18 @@ impl Application for App {
         self.cur_view.title(&self.intl)
     }
 
-    fn update(&mut self, message: Message, clipboard: &mut iced::Clipboard) -> Command<Message> {
+    fn update(&mut self, message: Message, _clipboard: &mut iced::Clipboard) -> Command<Message> {
+        /// update the specified field of user_settings with the provided value
+        macro_rules! update_setting {
+            ($field: ident, $value: expr) => {{
+                let mut user_settings = self.user_settings.lock().unwrap();
+                user_settings.$field = $value.into();
+            }};
+        }
+
         match message {
             Message::UrlsChanged(value) => {
                 self.set_url_input(value);
-            }
-            Message::SaveDirChanged(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.downloads_path = value.into();
-            }
-            Message::FilenameFormatChanged(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.file_name_format = value;
-            }
-            Message::DiscographyToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.download_artist_discography = value;
-            }
-            Message::ArtInFolderToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.save_cover_art_in_folder = value;
-            }
-            Message::ArtInTagsToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.save_cover_art_in_tags = value;
-            }
-            Message::ModifyTagsToggled(value) => {
-                let mut user_settings = self.user_settings.lock().unwrap();
-                user_settings.modify_tags = value;
             }
             Message::AddUrl => {
                 if self.ui_state.main.url_state.input_value.is_empty() {
@@ -219,16 +203,35 @@ impl Application for App {
                 });
             }
             Message::SetSaveDir => {}
-            Message::SettingsChanged(..) => {}
             Message::Settings(message) => {
                 self.ui_state.settings.update(message);
             }
-            Message::LanguageChanged(language) => {
-                // println!("Language selected: {}", language);
-            }
-            Message::ThemeChanged(theme) => {
-                // println!("theme selected: {}", theme);
-            }
+            Message::SettingsChanged(setting) => match setting {
+                SettingType::Language(language) => {
+                    // println!("Language selected: {}", language);
+                }
+                SettingType::Theme(theme) => {
+                    // println!("theme selected: {}", theme);
+                }
+                SettingType::SaveDir(value) => update_setting!(downloads_path, value),
+                SettingType::FilenameFormat(value) => update_setting!(file_name_format, value),
+                SettingType::Discography(value) => {
+                    update_setting!(download_artist_discography, value)
+                }
+                SettingType::ArtInFolder(value) => {
+                    update_setting!(save_cover_art_in_folder, value)
+                }
+                SettingType::ArtInTags(value) => update_setting!(save_cover_art_in_tags, value),
+                SettingType::ModifyTags(value) => update_setting!(modify_tags, value),
+                SettingType::TagYear(value) => update_setting!(tag_year, value),
+                SettingType::TagAlbumArtist(value) => update_setting!(tag_album_artist, value),
+                SettingType::TagAlbumTitle(value) => update_setting!(tag_album_title, value),
+                SettingType::TagArtist(value) => update_setting!(tag_artist, value),
+                SettingType::TagComments(value) => update_setting!(tag_comments, value),
+                SettingType::TagLyrics(value) => update_setting!(tag_lyrics, value),
+                SettingType::TagTrackNumber(value) => update_setting!(tag_track_number, value),
+                SettingType::TagTrackTitle(value) => update_setting!(tag_track_title, value),
+            },
         }
         Command::none()
     }

@@ -43,10 +43,19 @@ pub struct IntlString {
     pub general: String,
     /// Naming and Tags settings view title
     pub naming_and_tags: String,
-    // Language label
+    /// Language label
     pub language: String,
-    // Theme label
+    /// Theme label
     pub theme: String,
+
+    pub album_artist: String,
+    pub album_title: String,
+    pub artist: String,
+    pub comments: String,
+    pub lyrics: String,
+    pub track_number: String,
+    pub track_title: String,
+    pub album_date: String,
 }
 
 impl IntlString {

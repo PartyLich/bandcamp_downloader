@@ -19,5 +19,13 @@
   "general": "General",
   "naming_and_tags": "Naming and Tags",
   "language": "Language",
-  "theme": "Theme"
+  "theme": "Theme",
+  "album_artist": "Album artist",
+  "album_title": "Album title",
+  "artist": "Artist",
+  "comments": "Comments",
+  "lyrics": "Lyrics",
+  "track_number": "Track number",
+  "track_title": "Track title",
+  "album_date": "Album release date"
 }

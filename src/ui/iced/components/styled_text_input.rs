@@ -2,7 +2,10 @@ use iced::{Align, Row};
 use iced::{Element, TextInput};
 
 use super::TEXT_SIZE;
-use crate::ui::{iced::Message, IntlString};
+use crate::ui::{
+    iced::{Message, SettingType},
+    IntlString,
+};
 
 /// Returns a styled TextInput
 pub fn styled_text_input<'a, F>(
@@ -24,12 +27,9 @@ pub fn save_input<'a>(
     value: &str,
     intl: &IntlString,
 ) -> TextInput<'a, Message> {
-    styled_text_input(
-        state,
-        &intl.save_input_placeholder,
-        value,
-        Message::SaveDirChanged,
-    )
+    styled_text_input(state, &intl.save_input_placeholder, value, |a| {
+        SettingType::SaveDir(a).into()
+    })
     .on_submit(Message::SetSaveDir)
 }
 
