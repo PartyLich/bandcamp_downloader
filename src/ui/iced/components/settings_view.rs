@@ -64,42 +64,24 @@ struct Sections {
 
 impl Sections {
     fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
+        macro_rules! section_button {
+            ($state: ident, $label: ident, $message: path) => {
+                buttons::button(
+                    &mut self.$state,
+                    &intl.$label,
+                    Some(HorizontalAlignment::Left),
+                )
+                .width(Length::Fill)
+                .on_press($message.into());
+            };
+        }
+
         // view select buttons
-        let general = buttons::button(
-            &mut self.general,
-            &intl.general,
-            Some(HorizontalAlignment::Left),
-        )
-        .width(Length::Fill)
-        .on_press(SettingsMessage::General.into());
-        let naming = buttons::button(
-            &mut self.naming,
-            &intl.naming_and_tags,
-            Some(HorizontalAlignment::Left),
-        )
-        .width(Length::Fill)
-        .on_press(SettingsMessage::Naming.into());
-        let art = buttons::button(
-            &mut self.art,
-            &intl.cover_art,
-            Some(HorizontalAlignment::Left),
-        )
-        .width(Length::Fill)
-        .on_press(SettingsMessage::Art.into());
-        let playlist = buttons::button(
-            &mut self.playlist,
-            &intl.playlist,
-            Some(HorizontalAlignment::Left),
-        )
-        .width(Length::Fill)
-        .on_press(SettingsMessage::Playlist.into());
-        let downloads = buttons::button(
-            &mut self.downloads,
-            &intl.downloads,
-            Some(HorizontalAlignment::Left),
-        )
-        .width(Length::Fill)
-        .on_press(SettingsMessage::Downloads.into());
+        let general = section_button!(general, general, SettingsMessage::General);
+        let naming = section_button!(naming, naming_and_tags, SettingsMessage::Naming);
+        let art = section_button!(art, cover_art, SettingsMessage::Art);
+        let playlist = section_button!(playlist, playlist, SettingsMessage::Playlist);
+        let downloads = section_button!(downloads, downloads, SettingsMessage::Downloads);
 
         Container::new(
             Column::new()
