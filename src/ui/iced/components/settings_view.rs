@@ -1,4 +1,4 @@
-use iced::{button, Column, Container, Element, Length, Row, Space};
+use iced::{button, Column, Container, Element, HorizontalAlignment, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
@@ -65,21 +65,41 @@ struct Sections {
 impl Sections {
     fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
         // view select buttons
-        let general = buttons::button(&mut self.general, &intl.general)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::General.into());
-        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::Naming.into());
-        let art = buttons::button(&mut self.art, &intl.cover_art)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::Art.into());
-        let playlist = buttons::button(&mut self.playlist, &intl.playlist)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::Playlist.into());
-        let downloads = buttons::button(&mut self.downloads, "Downloads")
-            .width(Length::Fill)
-            .on_press(SettingsMessage::Downloads.into());
+        let general = buttons::button(
+            &mut self.general,
+            &intl.general,
+            Some(HorizontalAlignment::Left),
+        )
+        .width(Length::Fill)
+        .on_press(SettingsMessage::General.into());
+        let naming = buttons::button(
+            &mut self.naming,
+            &intl.naming_and_tags,
+            Some(HorizontalAlignment::Left),
+        )
+        .width(Length::Fill)
+        .on_press(SettingsMessage::Naming.into());
+        let art = buttons::button(
+            &mut self.art,
+            &intl.cover_art,
+            Some(HorizontalAlignment::Left),
+        )
+        .width(Length::Fill)
+        .on_press(SettingsMessage::Art.into());
+        let playlist = buttons::button(
+            &mut self.playlist,
+            &intl.playlist,
+            Some(HorizontalAlignment::Left),
+        )
+        .width(Length::Fill)
+        .on_press(SettingsMessage::Playlist.into());
+        let downloads = buttons::button(
+            &mut self.downloads,
+            "Downloads",
+            Some(HorizontalAlignment::Left),
+        )
+        .width(Length::Fill)
+        .on_press(SettingsMessage::Downloads.into());
 
         Container::new(
             Column::new()
