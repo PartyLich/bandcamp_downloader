@@ -61,7 +61,7 @@ impl Sections {
         let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
             .width(Length::Fill)
             .on_press(SettingsMessage::Naming.into());
-        let art = buttons::button(&mut self.art, "Cover art")
+        let art = buttons::button(&mut self.art, &intl.cover_art)
             .width(Length::Fill)
             .on_press(SettingsMessage::Art.into());
 

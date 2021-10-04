@@ -35,6 +35,8 @@ pub struct IntlString {
     pub save_input_placeholder: String,
     /// Modify id3 tags toggle label
     pub modify_tags_checkbox: String,
+    /// Cover art settings view title
+    pub cover_art: String,
     /// Cover art in folder toggle label
     pub art_in_folder: String,
     /// Cover art in tags toggle label
