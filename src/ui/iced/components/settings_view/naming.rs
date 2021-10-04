@@ -1,6 +1,7 @@
 //! Naming and Tag settings view
-use iced::{text_input, Column, Element, Length, Space};
+use iced::{text_input, Align, Column, Element, Length, PickList, Row, Space};
 
+use crate::core::EditAction;
 use crate::settings::UserSettings;
 use crate::ui::{
     iced::{components, Message},
@@ -46,4 +47,19 @@ impl State {
             .push(Space::with_height(Length::Fill))
             .into()
     }
+}
+
+/// Pick list with label
+fn picker_row<'a>(
+    pick_list: PickList<'a, EditAction, Message>,
+    label: impl Into<String>,
+) -> Element<'a, Message> {
+    let label = components::StyledText(format!("{}:", label.into())).width(Length::Units(100));
+
+    Row::new()
+        .spacing(5)
+        .align_items(Align::Center)
+        .push(label)
+        .push(pick_list)
+        .into()
 }
