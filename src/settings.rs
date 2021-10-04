@@ -31,7 +31,7 @@ impl std::fmt::Display for Language {
 }
 
 /// Available playlist export formats
-#[derive(Debug, Deserialize, Copy, Clone, Serialize)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Serialize)]
 pub enum PlaylistFormat {
     /// MP3 url format
     M3U,

@@ -60,6 +60,10 @@ pub struct IntlString {
     pub track_number: String,
     pub track_title: String,
     pub album_date: String,
+
+    pub playlist: String,
+    pub create_playlist: String,
+    pub playlist_format: String,
 }
 
 impl IntlString {
