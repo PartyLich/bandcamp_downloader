@@ -236,6 +236,9 @@ impl Application for App {
                 SettingType::TagTrackTitle(value) => update_setting!(tag_track_title, value),
                 SettingType::CreatePlaylist(value) => update_setting!(create_playlist, value),
                 SettingType::PlaylistFormat(value) => update_setting!(playlist_format, value),
+                SettingType::PlaylistFilename(value) => {
+                    update_setting!(playlist_file_name_format, value)
+                }
             },
         }
         Command::none()

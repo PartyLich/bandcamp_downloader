@@ -50,6 +50,7 @@ pub enum SettingType {
 
     CreatePlaylist(bool),
     PlaylistFormat(PlaylistFormat),
+    PlaylistFilename(String),
 }
 
 /// UI event messages
