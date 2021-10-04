@@ -18,7 +18,23 @@ pub enum EditAction {
 impl EditAction {
     /// list of all enum variants
     pub const ALL: [EditAction; 3] = [Self::Modify, Self::Empty, Self::Skip];
+
+    // TODO: language support
+    fn description(&self) -> &str {
+        match self {
+            Self::Modify => "Modify tag",
+            Self::Empty => "Clear tag",
+            Self::Skip => "Do not modify",
+        }
+    }
 }
+
+impl std::fmt::Display for EditAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
 /// Updates the [`id3::Tag`] in place with the specified album artist based on the specified [`EditAction`].
 pub fn update_album_artist(tag: &mut id3::Tag, album_artist: &str, edit_action: EditAction) {
     match edit_action {
