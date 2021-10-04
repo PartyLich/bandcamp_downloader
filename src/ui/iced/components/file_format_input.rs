@@ -21,6 +21,7 @@ pub fn filename_format<'a>(
 ) -> Element<'a, Message> {
     Row::new()
         .align_items(Align::Center)
+        .spacing(5)
         .push(super::StyledText(&intl.filename_format))
         .push(filename_format_input(state, filename_format, intl))
         .into()
