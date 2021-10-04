@@ -6,6 +6,7 @@ use crate::ui::{
     IntlString,
 };
 
+mod cover_art;
 mod general;
 mod naming;
 
@@ -13,6 +14,7 @@ mod naming;
 pub enum SettingsMessage {
     General,
     Naming,
+    Art,
 }
 
 /// Renderable views for Settings sections
@@ -20,6 +22,7 @@ pub enum SettingsMessage {
 pub enum View {
     General(general::State),
     Naming(naming::State),
+    Art(cover_art::State),
 }
 
 impl Default for View {
@@ -37,6 +40,7 @@ impl View {
         match self {
             Self::Naming(state) => state.view(settings, intl),
             Self::General(state) => state.view(settings, intl),
+            Self::Art(state) => state.view(settings, intl),
         }
     }
 }
@@ -45,6 +49,7 @@ impl View {
 struct Sections {
     general: button::State,
     naming: button::State,
+    art: button::State,
 }
 
 impl Sections {
@@ -56,6 +61,9 @@ impl Sections {
         let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
             .width(Length::Fill)
             .on_press(SettingsMessage::Naming.into());
+        let art = buttons::button(&mut self.art, &intl.cover_art)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::Art.into());
 
         Container::new(
             Column::new()
@@ -63,6 +71,7 @@ impl Sections {
                 .padding(4)
                 .push(general)
                 .push(naming)
+                .push(art)
                 .height(Length::Fill),
         )
         .height(Length::Fill)
@@ -122,6 +131,7 @@ impl State {
         match message {
             SettingsMessage::General => self.current_view = View::General(Default::default()),
             SettingsMessage::Naming => self.current_view = View::Naming(Default::default()),
+            SettingsMessage::Art => self.current_view = View::Art(Default::default()),
         }
     }
 }

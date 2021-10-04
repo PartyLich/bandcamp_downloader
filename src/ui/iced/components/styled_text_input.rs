@@ -22,6 +22,38 @@ where
         .padding(5)
 }
 
+// row with label and text input
+macro_rules! labeled_input {
+    (
+        $(#[$outer: meta])*
+        $name: ident, $label_field: ident,$placeholder: ident, $message: path
+    ) => {
+        $(
+            #[$outer]
+         )*
+            fn $name<'a>(
+                state: &'a mut iced::text_input::State,
+                value: &str,
+                intl: &IntlString,
+                ) -> Element<'a, Message> {
+                let input = components::styled_text_input::styled_text_input(
+                    state,
+                    &intl.$placeholder,
+                    value,
+                    |a| $message(a).into(),
+                    );
+
+                Row::new()
+                    .align_items(Align::Center)
+                    .spacing(5)
+                    .push(components::StyledText(&intl.$label_field))
+                    .push(input)
+                    .into()
+            }
+    };
+}
+pub(crate) use labeled_input;
+
 pub fn save_input<'a>(
     state: &'a mut iced::text_input::State,
     value: &str,
