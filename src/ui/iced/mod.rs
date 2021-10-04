@@ -51,6 +51,8 @@ pub enum SettingType {
     CreatePlaylist(bool),
     PlaylistFormat(PlaylistFormat),
     PlaylistFilename(String),
+
+    DownloadSerial(bool),
 }
 
 /// UI event messages
