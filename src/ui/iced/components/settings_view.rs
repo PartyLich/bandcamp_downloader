@@ -95,7 +95,7 @@ impl Sections {
         .on_press(SettingsMessage::Playlist.into());
         let downloads = buttons::button(
             &mut self.downloads,
-            "Downloads",
+            &intl.downloads,
             Some(HorizontalAlignment::Left),
         )
         .width(Length::Fill)

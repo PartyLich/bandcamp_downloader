@@ -33,5 +33,6 @@
   "playlist": "Playlist",
   "create_playlist": "Create playlist for each album",
   "playlist_format": "Playlist format",
+  "downloads": "Downloads",
   "download_serial": "Download one album at a time"
 }

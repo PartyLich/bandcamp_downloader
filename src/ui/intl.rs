@@ -65,6 +65,7 @@ pub struct IntlString {
     pub create_playlist: String,
     pub playlist_format: String,
 
+    pub downloads: String,
     pub download_serial: String,
 }
 
