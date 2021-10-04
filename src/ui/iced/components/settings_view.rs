@@ -9,12 +9,14 @@ use crate::ui::{
 mod cover_art;
 mod general;
 mod naming;
+mod playlist;
 
 #[derive(Debug, Clone)]
 pub enum SettingsMessage {
     General,
     Naming,
     Art,
+    Playlist,
 }
 
 /// Renderable views for Settings sections
@@ -23,6 +25,7 @@ pub enum View {
     General(general::State),
     Naming(naming::State),
     Art(cover_art::State),
+    Playlist(playlist::State),
 }
 
 impl Default for View {
@@ -41,6 +44,7 @@ impl View {
             Self::Naming(state) => state.view(settings, intl),
             Self::General(state) => state.view(settings, intl),
             Self::Art(state) => state.view(settings, intl),
+            Self::Playlist(state) => state.view(settings, intl),
         }
     }
 }
@@ -50,6 +54,7 @@ struct Sections {
     general: button::State,
     naming: button::State,
     art: button::State,
+    playlist: button::State,
 }
 
 impl Sections {
@@ -64,6 +69,9 @@ impl Sections {
         let art = buttons::button(&mut self.art, &intl.cover_art)
             .width(Length::Fill)
             .on_press(SettingsMessage::Art.into());
+        let playlist = buttons::button(&mut self.playlist, &intl.playlist)
+            .width(Length::Fill)
+            .on_press(SettingsMessage::Playlist.into());
 
         Container::new(
             Column::new()
@@ -72,6 +80,7 @@ impl Sections {
                 .push(general)
                 .push(naming)
                 .push(art)
+                .push(playlist)
                 .height(Length::Fill),
         )
         .height(Length::Fill)
@@ -132,6 +141,7 @@ impl State {
             SettingsMessage::General => self.current_view = View::General(Default::default()),
             SettingsMessage::Naming => self.current_view = View::Naming(Default::default()),
             SettingsMessage::Art => self.current_view = View::Art(Default::default()),
+            SettingsMessage::Playlist => self.current_view = View::Playlist(Default::default()),
         }
     }
 }

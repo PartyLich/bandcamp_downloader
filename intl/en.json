@@ -29,5 +29,7 @@
   "lyrics": "Lyrics",
   "track_number": "Track number",
   "track_title": "Track title",
-  "album_date": "Album release date"
+  "album_date": "Album release date",
+  "playlist": "Playlist",
+  "create_playlist": "Create playlist for each album"
 }

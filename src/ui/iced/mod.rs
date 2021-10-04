@@ -44,6 +44,8 @@ pub enum SettingType {
     TagLyrics(tag::EditAction),
     TagTrackNumber(tag::EditAction),
     TagTrackTitle(tag::EditAction),
+
+    CreatePlaylist(bool),
 }
 
 /// UI event messages
