@@ -74,3 +74,9 @@ impl From<settings_view::SettingsMessage> for Message {
         Self::Settings(message)
     }
 }
+
+impl From<SettingType> for Message {
+    fn from(message: SettingType) -> Self {
+        Self::SettingsChanged(message)
+    }
+}
