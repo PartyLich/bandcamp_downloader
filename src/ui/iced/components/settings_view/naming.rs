@@ -71,3 +71,23 @@ fn picker_row<'a>(
         .push(pick_list)
         .into()
 }
+
+/// Generate an EditAction pick list widget fn
+macro_rules! edit_action_picker {
+    ($name: ident, $message: expr, $intl_field: ident) => {
+        fn $name<'a>(
+            pick_list_state: &'a mut pick_list::State<EditAction>,
+            edit_action: &EditAction,
+            intl: &IntlString,
+        ) -> Element<'a, Message> {
+            let pick_list = components::styled_pick_list(
+                pick_list_state,
+                &EditAction::ALL[..],
+                Some(*edit_action),
+                |a| $message(a).into(),
+            );
+
+            picker_row(pick_list.into(), &intl.$intl_field)
+        }
+    };
+}
