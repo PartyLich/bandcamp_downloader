@@ -30,15 +30,6 @@ impl State {
             components::checkbox_row(settings.modify_tags, &intl.modify_tags_checkbox, |a| {
                 SettingType::ModifyTags(a).into()
             });
-        let art_in_folder_checkbox = components::checkbox_row(
-            settings.save_cover_art_in_folder,
-            &intl.art_in_folder,
-            |a| SettingType::ArtInFolder(a).into(),
-        );
-        let art_in_tags_checkbox =
-            components::checkbox_row(settings.save_cover_art_in_tags, &intl.art_in_tags, |a| {
-                SettingType::ArtInTags(a).into()
-            });
 
         Column::new()
             .spacing(5)
@@ -82,10 +73,6 @@ impl State {
                 &settings.tag_comments,
                 intl,
             ))
-            // TODO: move to art view
-            .push(art_in_folder_checkbox)
-            .push(art_in_tags_checkbox)
-            //
             .push(Space::with_height(Length::Fill))
             .into()
     }
