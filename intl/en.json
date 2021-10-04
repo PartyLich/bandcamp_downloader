@@ -31,5 +31,6 @@
   "track_title": "Track title",
   "album_date": "Album release date",
   "playlist": "Playlist",
-  "create_playlist": "Create playlist for each album"
+  "create_playlist": "Create playlist for each album",
+  "playlist_format": "Playlist format"
 }

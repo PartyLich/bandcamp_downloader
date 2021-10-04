@@ -2,7 +2,10 @@
 use iced::Application;
 
 use crate::core::tag;
-use crate::{settings::UserSettings, ui};
+use crate::{
+    settings::{PlaylistFormat, UserSettings},
+    ui,
+};
 use app::{App, AppFlags};
 use components::settings_view;
 use components::EntryMessage;
@@ -46,6 +49,7 @@ pub enum SettingType {
     TagTrackTitle(tag::EditAction),
 
     CreatePlaylist(bool),
+    PlaylistFormat(PlaylistFormat),
 }
 
 /// UI event messages

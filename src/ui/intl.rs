@@ -63,6 +63,7 @@ pub struct IntlString {
 
     pub playlist: String,
     pub create_playlist: String,
+    pub playlist_format: String,
 }
 
 impl IntlString {
