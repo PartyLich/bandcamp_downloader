@@ -3,7 +3,7 @@ use iced::{pick_list, Align, Column, Container, Element, Length, Row};
 
 use crate::settings::{Language, UserSettings};
 use crate::ui::{
-    iced::{components, style::Theme, Message},
+    iced::{components, style::Theme, Message, SettingType},
     IntlString,
 };
 
@@ -11,8 +11,6 @@ use crate::ui::{
 pub struct State {
     language_list: pick_list::State<Language>,
     theme_list: pick_list::State<Theme>,
-    selected_language: Language,
-    selected_theme: Theme,
 }
 
 impl Default for State {
@@ -20,26 +18,20 @@ impl Default for State {
         Self {
             language_list: Default::default(),
             theme_list: Default::default(),
-            selected_language: UserSettings::default().language,
-            selected_theme: UserSettings::default().theme,
         }
     }
 }
 
 impl State {
-    pub fn view(&mut self, _settings: &UserSettings, intl: &IntlString) -> Element<Message> {
+    pub fn view(&mut self, settings: &UserSettings, intl: &IntlString) -> Element<Message> {
         let content = Column::new()
             .spacing(5)
             .push(language_picker(
                 &mut self.language_list,
-                &self.selected_language,
+                &settings.language,
                 intl,
             ))
-            .push(theme_picker(
-                &mut self.theme_list,
-                &self.selected_theme,
-                intl,
-            ));
+            .push(theme_picker(&mut self.theme_list, &settings.theme, intl));
 
         Container::new(content)
             .width(Length::Fill)
@@ -59,7 +51,7 @@ fn language_picker<'a>(
         pick_list_state,
         &Language::ALL[..],
         Some(*selected_language),
-        Message::LanguageChanged,
+        |a| SettingType::Language(a).into(),
     );
 
     Row::new()
@@ -81,7 +73,7 @@ fn theme_picker<'a>(
         pick_list_state,
         &Theme::ALL[..],
         Some(*selected_theme),
-        Message::ThemeChanged,
+        |a| SettingType::Theme(a).into(),
     );
 
     Row::new()

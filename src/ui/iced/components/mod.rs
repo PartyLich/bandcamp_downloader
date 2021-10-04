@@ -3,15 +3,17 @@ use std::collections::HashSet;
 use iced::{Checkbox, Length, ProgressBar, Row, Text};
 
 use crate::{
-    ui::iced::{style, Message},
+    ui::iced::{style, Message, SettingType},
     ui::{IntlString, Progress},
 };
 
 use controls::controls;
 use event_log::event_log;
 use file_format_input::filename_format;
+use indent_row::indent;
 use styled_pick_list::styled_pick_list;
 use styled_text as StyledText;
+use styled_text_input::labeled_input;
 use styled_text_input::save_dir;
 use url_section::{url_section, UrlState};
 
@@ -48,11 +50,9 @@ where
 
 /// Checkbox for toggling discography download option
 pub fn discography_checkbox<'a>(state: bool, intl: &IntlString) -> Row<'a, Message> {
-    checkbox_row(
-        state,
-        &intl.discography_checkbox,
-        Message::DiscographyToggled,
-    )
+    checkbox_row(state, &intl.discography_checkbox, |a| {
+        SettingType::Discography(a).into()
+    })
 }
 
 /// Creates a ProgressBar to display the completion percentage calculated from a set of Progress
@@ -66,4 +66,17 @@ pub fn download_progress_bar(files: &HashSet<Progress>) -> ProgressBar {
     ProgressBar::new(0.0..=100.0, download_progress)
         .height(Length::Units(18))
         .style(style::Theme::Light)
+}
+
+mod indent_row {
+    use iced::{Align, Length, Row, Space};
+
+    use crate::ui::iced::Message;
+
+    /// Indented row
+    pub fn indent<'a>(len: u16) -> Row<'a, Message> {
+        Row::new()
+            .align_items(Align::Center)
+            .push(Space::with_width(Length::Units(len)))
+    }
 }

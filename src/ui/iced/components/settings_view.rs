@@ -1,4 +1,4 @@
-use iced::{button, Column, Container, Element, Length, Row, Space};
+use iced::{button, Column, Container, Element, HorizontalAlignment, Length, Row, Space};
 
 use crate::settings::UserSettings;
 use crate::ui::{
@@ -6,13 +6,19 @@ use crate::ui::{
     IntlString,
 };
 
+mod cover_art;
+mod downloads;
 mod general;
 mod naming;
+mod playlist;
 
 #[derive(Debug, Clone)]
 pub enum SettingsMessage {
     General,
     Naming,
+    Art,
+    Playlist,
+    Downloads,
 }
 
 /// Renderable views for Settings sections
@@ -20,6 +26,9 @@ pub enum SettingsMessage {
 pub enum View {
     General(general::State),
     Naming(naming::State),
+    Art(cover_art::State),
+    Playlist(playlist::State),
+    Downloads(downloads::State),
 }
 
 impl Default for View {
@@ -37,6 +46,9 @@ impl View {
         match self {
             Self::Naming(state) => state.view(settings, intl),
             Self::General(state) => state.view(settings, intl),
+            Self::Art(state) => state.view(settings, intl),
+            Self::Playlist(state) => state.view(settings, intl),
+            Self::Downloads(state) => state.view(settings, intl),
         }
     }
 }
@@ -45,17 +57,31 @@ impl View {
 struct Sections {
     general: button::State,
     naming: button::State,
+    art: button::State,
+    playlist: button::State,
+    downloads: button::State,
 }
 
 impl Sections {
     fn view<'a>(&'a mut self, intl: &'a IntlString) -> Container<'a, Message> {
+        macro_rules! section_button {
+            ($state: ident, $label: ident, $message: path) => {
+                buttons::button(
+                    &mut self.$state,
+                    &intl.$label,
+                    Some(HorizontalAlignment::Left),
+                )
+                .width(Length::Fill)
+                .on_press($message.into());
+            };
+        }
+
         // view select buttons
-        let general = buttons::button(&mut self.general, &intl.general)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::General.into());
-        let naming = buttons::button(&mut self.naming, &intl.naming_and_tags)
-            .width(Length::Fill)
-            .on_press(SettingsMessage::Naming.into());
+        let general = section_button!(general, general, SettingsMessage::General);
+        let naming = section_button!(naming, naming_and_tags, SettingsMessage::Naming);
+        let art = section_button!(art, cover_art, SettingsMessage::Art);
+        let playlist = section_button!(playlist, playlist, SettingsMessage::Playlist);
+        let downloads = section_button!(downloads, downloads, SettingsMessage::Downloads);
 
         Container::new(
             Column::new()
@@ -63,6 +89,9 @@ impl Sections {
                 .padding(4)
                 .push(general)
                 .push(naming)
+                .push(art)
+                .push(playlist)
+                .push(downloads)
                 .height(Length::Fill),
         )
         .height(Length::Fill)
@@ -122,6 +151,9 @@ impl State {
         match message {
             SettingsMessage::General => self.current_view = View::General(Default::default()),
             SettingsMessage::Naming => self.current_view = View::Naming(Default::default()),
+            SettingsMessage::Art => self.current_view = View::Art(Default::default()),
+            SettingsMessage::Playlist => self.current_view = View::Playlist(Default::default()),
+            SettingsMessage::Downloads => self.current_view = View::Downloads(Default::default()),
         }
     }
 }

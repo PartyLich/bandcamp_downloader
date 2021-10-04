@@ -5,7 +5,7 @@ use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 
 /// id3 tag modification modes
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum EditAction {
     /// Save or update the field in the tag
     Modify,
@@ -13,6 +13,26 @@ pub enum EditAction {
     Empty,
     /// Do not modify the tag
     Skip,
+}
+
+impl EditAction {
+    /// list of all enum variants
+    pub const ALL: [EditAction; 3] = [Self::Modify, Self::Empty, Self::Skip];
+
+    // TODO: language support
+    fn description(&self) -> &str {
+        match self {
+            Self::Modify => "Modify tag",
+            Self::Empty => "Clear tag",
+            Self::Skip => "Do not modify",
+        }
+    }
+}
+
+impl std::fmt::Display for EditAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
 
 /// Updates the [`id3::Tag`] in place with the specified album artist based on the specified [`EditAction`].

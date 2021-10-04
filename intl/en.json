@@ -4,6 +4,8 @@
   "save_caption": "Save albums to",
   "discography_checkbox": "Download artist discography",
   "modify_tags_checkbox": "Modify track tags (id3)",
+  "cover_art": "Cover art",
+  "art_input_placeholder": "Enter enter a filename with placeholders",
   "art_in_folder": "Save album artwork in folder",
   "art_in_tags": "Save album artwork in tags",
   "log_placeholder": "Ready to rock",
@@ -19,5 +21,18 @@
   "general": "General",
   "naming_and_tags": "Naming and Tags",
   "language": "Language",
-  "theme": "Theme"
+  "theme": "Theme",
+  "album_artist": "Album artist",
+  "album_title": "Album title",
+  "artist": "Artist",
+  "comments": "Comments",
+  "lyrics": "Lyrics",
+  "track_number": "Track number",
+  "track_title": "Track title",
+  "album_date": "Album release date",
+  "playlist": "Playlist",
+  "create_playlist": "Create playlist for each album",
+  "playlist_format": "Playlist format",
+  "downloads": "Downloads",
+  "download_serial": "Download one album at a time"
 }

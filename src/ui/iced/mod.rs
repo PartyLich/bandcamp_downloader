@@ -1,7 +1,11 @@
 //! UI implementation using iced crate
 use iced::Application;
 
-use crate::{settings::UserSettings, ui};
+use crate::core::tag;
+use crate::{
+    settings::{PlaylistFormat, UserSettings},
+    ui,
+};
 use app::{App, AppFlags};
 use components::settings_view;
 use components::EntryMessage;
@@ -21,10 +25,34 @@ impl ui::Ui for IcedUi {
     }
 }
 
+/// user settings as an enum
 #[derive(Debug, Clone)]
 pub enum SettingType {
-    Language,
-    Other,
+    Language(crate::settings::Language),
+    Theme(style::Theme),
+    SaveDir(String),
+    FilenameFormat(String),
+    Discography(bool),
+
+    ArtFilename(String),
+    ArtInFolder(bool),
+    ArtInTags(bool),
+
+    ModifyTags(bool),
+    TagYear(tag::EditAction),
+    TagAlbumArtist(tag::EditAction),
+    TagAlbumTitle(tag::EditAction),
+    TagArtist(tag::EditAction),
+    TagComments(tag::EditAction),
+    TagLyrics(tag::EditAction),
+    TagTrackNumber(tag::EditAction),
+    TagTrackTitle(tag::EditAction),
+
+    CreatePlaylist(bool),
+    PlaylistFormat(PlaylistFormat),
+    PlaylistFilename(String),
+
+    DownloadSerial(bool),
 }
 
 /// UI event messages
@@ -32,12 +60,6 @@ pub enum SettingType {
 pub enum Message {
     Domain(ui::Message),
     UrlsChanged(String),
-    SaveDirChanged(String),
-    FilenameFormatChanged(String),
-    DiscographyToggled(bool),
-    ModifyTagsToggled(bool),
-    ArtInFolderToggled(bool),
-    ArtInTagsToggled(bool),
     OpenSettings,
     OpenMain,
     AddUrl,
@@ -48,12 +70,16 @@ pub enum Message {
     SettingsChanged(SettingType),
     SettingsSaved,
     Settings(settings_view::SettingsMessage),
-    LanguageChanged(crate::settings::Language),
-    ThemeChanged(style::Theme),
 }
 
 impl From<settings_view::SettingsMessage> for Message {
     fn from(message: settings_view::SettingsMessage) -> Self {
         Self::Settings(message)
+    }
+}
+
+impl From<SettingType> for Message {
+    fn from(message: SettingType) -> Self {
+        Self::SettingsChanged(message)
     }
 }

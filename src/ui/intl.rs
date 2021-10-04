@@ -35,6 +35,10 @@ pub struct IntlString {
     pub save_input_placeholder: String,
     /// Modify id3 tags toggle label
     pub modify_tags_checkbox: String,
+    /// Cover art filename format placeholder text
+    pub art_input_placeholder: String,
+    /// Cover art settings view title
+    pub cover_art: String,
     /// Cover art in folder toggle label
     pub art_in_folder: String,
     /// Cover art in tags toggle label
@@ -43,10 +47,26 @@ pub struct IntlString {
     pub general: String,
     /// Naming and Tags settings view title
     pub naming_and_tags: String,
-    // Language label
+    /// Language label
     pub language: String,
-    // Theme label
+    /// Theme label
     pub theme: String,
+
+    pub album_artist: String,
+    pub album_title: String,
+    pub artist: String,
+    pub comments: String,
+    pub lyrics: String,
+    pub track_number: String,
+    pub track_title: String,
+    pub album_date: String,
+
+    pub playlist: String,
+    pub create_playlist: String,
+    pub playlist_format: String,
+
+    pub downloads: String,
+    pub download_serial: String,
 }
 
 impl IntlString {
