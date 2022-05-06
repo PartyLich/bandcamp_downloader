@@ -658,6 +658,8 @@ mod test {
             "https://theracers.bandcamp.com/track/tunnel-vision",
             "https://theracers.bandcamp.com/track/deep-blue-the-racers-feat-jim-gauntner-remix",
             "https://theracers.bandcamp.com/album/the-midnight-by-the-racers-i",
+            "https://theracers.bandcamp.com/track/backlash",
+            "https://theracers.bandcamp.com/track/the-jungle",
             "https://theracers.bandcamp.com/track/final-lap",
         ];
         let mut actual = get_artist_discography(&urls).await;
