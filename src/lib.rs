@@ -42,6 +42,8 @@ lazy_static! {
     static ref HTML_LT_RE: Regex = Regex::new(r#"&lt;"#).unwrap();
     // > is replaced with &gt;
     static ref HTML_GT_RE: Regex = Regex::new(r#"&gt;"#).unwrap();
+    // ' is replaced with &#39;
+    static ref HTML_APOSTROPHE_RE: Regex = Regex::new(r#"&#39;"#).unwrap();
 }
 
 /// Get text from a url using the reqwest shortcut method

@@ -7,7 +7,8 @@ use crate::{
     error::Error,
     model::{Album, JsonAlbum},
     ui::{LogLevel, Message},
-    Result, ALBUM_RE, BAND_RE, HTML_AMP_RE, HTML_GT_RE, HTML_LT_RE, HTML_QUOTE_RE,
+    Result, ALBUM_RE, BAND_RE, HTML_AMP_RE, HTML_APOSTROPHE_RE, HTML_GT_RE, HTML_LT_RE,
+    HTML_QUOTE_RE,
 };
 
 mod file_helper;
@@ -42,6 +43,7 @@ fn get_album_data(raw_html: &str) -> Result<String> {
     let album_data = HTML_AMP_RE.replace_all(&album_data, "&");
     let album_data = HTML_LT_RE.replace_all(&album_data, "<");
     let album_data = HTML_GT_RE.replace_all(&album_data, ">");
+    let album_data = HTML_APOSTROPHE_RE.replace_all(&album_data, "'");
     ALBUM_DATA_RE
         .captures(&album_data)
         .and_then(|captures| captures.name("data"))
